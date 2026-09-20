@@ -1,4 +1,4 @@
-# StarString Auto-Updater
+# StarStrings Auto-Updater
 
 A Windows tray app that keeps [MrKraken's StarStrings](https://github.com/MrKraken/StarStrings)
 `global.ini` localization file up to date for **Star Citizen LIVE**.
