@@ -1,15 +1,15 @@
 using System.Drawing;
 using System.Windows.Forms;
-using StarStringAutoUpdater.Models;
+using StarStringsAutoUpdater.Models;
 
-namespace StarStringAutoUpdater.UI;
+namespace StarStringsAutoUpdater.UI;
 
 /// <summary>Modal "a new StarStrings version is available" prompt.</summary>
 public sealed class UpdatePromptForm : Form
 {
     public UpdatePromptForm(GitHubRelease release)
     {
-        Text = "StarString Auto-Updater";
+        Text = "StarStrings Auto-Updater";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterScreen;
         MaximizeBox = false;

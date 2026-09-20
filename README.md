@@ -17,7 +17,7 @@ you first.
 - Backs up your existing `global.ini` to `global.ini.bak` before overwriting it.
 - Never touches an existing `user.cfg` — it only installs the bundled one if you don't have one
   yet, matching the StarStrings README's own install instructions.
-- Keeps two logs under `%AppData%\StarStringAutoUpdater\logs\`:
+- Keeps two logs under `%AppData%\StarStringsAutoUpdater\logs\`:
   - `update.log` — general activity/diagnostics (checks, downloads, errors).
   - `version-history.log` — one line per version actually installed, with timestamp, release
     name, and the zip's SHA-256 hash.
@@ -61,11 +61,11 @@ macOS, or Linux machine (cross-compiling to Windows works from any OS; running t
 requires Windows).
 
 ```bash
-dotnet publish src/StarStringAutoUpdater/StarStringAutoUpdater.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+dotnet publish src/StarStringsAutoUpdater/StarStringsAutoUpdater.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 
-The output is a single portable `StarStringAutoUpdater.exe` under
-`src/StarStringAutoUpdater/bin/Release/net8.0-windows/win-x64/publish/` — no .NET runtime
+The output is a single portable `StarStringsAutoUpdater.exe` under
+`src/StarStringsAutoUpdater/bin/Release/net8.0-windows/win-x64/publish/` — no .NET runtime
 install required on the target machine.
 
 A GitHub Actions workflow (`.github/workflows/build.yml`) builds this automatically on every
@@ -74,7 +74,7 @@ Release.
 
 ## Running it
 
-1. Run `StarStringAutoUpdater.exe`. No installer is required — it's a portable single file.
+1. Run `StarStringsAutoUpdater.exe`. No installer is required — it's a portable single file.
 2. On first launch, it asks you to locate your Star Citizen **LIVE** folder — the one containing
    `data\Localization\english\global.ini` and `user.cfg`, typically:
    ```
@@ -84,7 +84,7 @@ Release.
 4. Right-click the tray icon any time to check manually, change the folder, or stop/start
    automatic checking.
 
-Settings live in `%AppData%\StarStringAutoUpdater\settings.json` — you can edit
+Settings live in `%AppData%\StarStringsAutoUpdater\settings.json` — you can edit
 `CheckIntervalMinutes` there if you want a different check frequency than 30 minutes (restart
 the app afterward).
 

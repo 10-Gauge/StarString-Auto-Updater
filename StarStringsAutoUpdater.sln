@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarStringAutoUpdater", "src\StarStringAutoUpdater\StarStringAutoUpdater.csproj", "{8C89C1B2-565C-4FCA-8C84-9B709EE1836B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarStringsAutoUpdater", "src\StarStringsAutoUpdater\StarStringsAutoUpdater.csproj", "{8C89C1B2-565C-4FCA-8C84-9B709EE1836B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

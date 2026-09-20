@@ -1,6 +1,6 @@
 using System.IO.Compression;
 
-namespace StarStringAutoUpdater.Services;
+namespace StarStringsAutoUpdater.Services;
 
 public sealed record InstallResult(string GlobalIniPath, bool UserCfgWritten, bool GlobalIniBackedUp);
 

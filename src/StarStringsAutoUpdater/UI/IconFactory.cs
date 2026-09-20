@@ -2,7 +2,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 
-namespace StarStringAutoUpdater.UI;
+namespace StarStringsAutoUpdater.UI;
 
 /// <summary>
 /// Draws the tray icon at runtime instead of shipping a binary .ico asset,

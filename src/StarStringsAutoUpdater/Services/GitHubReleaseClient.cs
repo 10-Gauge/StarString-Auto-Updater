@@ -1,8 +1,8 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
-using StarStringAutoUpdater.Models;
+using StarStringsAutoUpdater.Models;
 
-namespace StarStringAutoUpdater.Services;
+namespace StarStringsAutoUpdater.Services;
 
 public sealed class GitHubReleaseClient : IDisposable
 {
@@ -20,7 +20,7 @@ public sealed class GitHubReleaseClient : IDisposable
         {
             Timeout = TimeSpan.FromSeconds(30),
         };
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("StarStringAutoUpdater", "1.0"));
+        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("StarStringsAutoUpdater", "1.0"));
         _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
         _http.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
     }

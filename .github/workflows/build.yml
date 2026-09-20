@@ -35,11 +35,11 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore src/StarStringAutoUpdater/StarStringAutoUpdater.csproj
+        run: dotnet restore src/StarStringsAutoUpdater/StarStringsAutoUpdater.csproj
 
       - name: Publish self-contained single-file win-x64 exe
         run: >
-          dotnet publish src/StarStringAutoUpdater/StarStringAutoUpdater.csproj
+          dotnet publish src/StarStringsAutoUpdater/StarStringsAutoUpdater.csproj
           -c Release
           -r win-x64
           --self-contained true
@@ -50,14 +50,14 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: StarStringAutoUpdater-win-x64
-          path: publish/StarStringAutoUpdater.exe
+          name: StarStringsAutoUpdater-win-x64
+          path: publish/StarStringsAutoUpdater.exe
 
       - name: Create GitHub Release (tag push)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: publish/StarStringAutoUpdater.exe
+          files: publish/StarStringsAutoUpdater.exe
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,7 +68,7 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.release_tag }}
           target_commitish: ${{ github.sha }}
-          files: publish/StarStringAutoUpdater.exe
+          files: publish/StarStringsAutoUpdater.exe
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

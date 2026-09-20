@@ -8,8 +8,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationVisualStyles>true</ApplicationVisualStyles>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <AssemblyName>StarStringAutoUpdater</AssemblyName>
-    <RootNamespace>StarStringAutoUpdater</RootNamespace>
+    <AssemblyName>StarStringsAutoUpdater</AssemblyName>
+    <RootNamespace>StarStringsAutoUpdater</RootNamespace>
     <InvariantGlobalization>true</InvariantGlobalization>
 
     <!-- Publish as a single self-contained win-x64 executable -->
@@ -19,10 +19,10 @@
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 
-    <Product>StarString Auto-Updater</Product>
-    <AssemblyTitle>StarString Auto-Updater</AssemblyTitle>
+    <Product>StarStrings Auto-Updater</Product>
+    <AssemblyTitle>StarStrings Auto-Updater</AssemblyTitle>
     <Description>Keeps MrKraken's StarStrings global.ini up to date for Star Citizen LIVE.</Description>
-    <Company>StarString Auto-Updater Project</Company>
+    <Company>StarStrings Auto-Updater Project</Company>
     <Version>1.0.0</Version>
   </PropertyGroup>
 

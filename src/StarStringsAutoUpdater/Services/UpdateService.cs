@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
-using StarStringAutoUpdater.Models;
+using StarStringsAutoUpdater.Models;
 
-namespace StarStringAutoUpdater.Services;
+namespace StarStringsAutoUpdater.Services;
 
 public enum CheckOutcome
 {

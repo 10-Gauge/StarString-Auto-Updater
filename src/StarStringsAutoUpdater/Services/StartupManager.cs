@@ -1,6 +1,6 @@
 using Microsoft.Win32;
 
-namespace StarStringAutoUpdater.Services;
+namespace StarStringsAutoUpdater.Services;
 
 /// <summary>
 /// Registers/unregisters the app to start automatically when the current user
@@ -11,7 +11,7 @@ namespace StarStringAutoUpdater.Services;
 public static class StartupManager
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string ValueName = "StarStringAutoUpdater";
+    private const string ValueName = "StarStringsAutoUpdater";
 
     public static void SetEnabled(bool enabled)
     {

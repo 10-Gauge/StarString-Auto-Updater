@@ -1,12 +1,12 @@
 using System.Windows.Forms;
-using StarStringAutoUpdater.Services;
-using StarStringAutoUpdater.UI;
+using StarStringsAutoUpdater.Services;
+using StarStringsAutoUpdater.UI;
 
-namespace StarStringAutoUpdater;
+namespace StarStringsAutoUpdater;
 
 internal static class Program
 {
-    private const string SingleInstanceMutexName = "Global\\StarStringAutoUpdater-SingleInstance";
+    private const string SingleInstanceMutexName = "Global\\StarStringsAutoUpdater-SingleInstance";
 
     [STAThread]
     private static void Main(string[] args)
@@ -16,7 +16,7 @@ internal static class Program
         if (!createdNew)
         {
             MessageBox.Show(
-                "StarString Auto-Updater is already running. Check your system tray.",
+                "StarStrings Auto-Updater is already running. Check your system tray.",
                 "Already running", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }

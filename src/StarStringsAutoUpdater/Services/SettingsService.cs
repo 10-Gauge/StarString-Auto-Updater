@@ -1,9 +1,9 @@
 using System.Text.Json;
-using StarStringAutoUpdater.Models;
+using StarStringsAutoUpdater.Models;
 
-namespace StarStringAutoUpdater.Services;
+namespace StarStringsAutoUpdater.Services;
 
-/// <summary>Loads and saves AppSettings as JSON in %AppData%\StarStringAutoUpdater.</summary>
+/// <summary>Loads and saves AppSettings as JSON in %AppData%\StarStringsAutoUpdater.</summary>
 public sealed class SettingsService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

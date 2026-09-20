@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace StarStringAutoUpdater.Models;
+namespace StarStringsAutoUpdater.Models;
 
 public sealed class GitHubRelease
 {

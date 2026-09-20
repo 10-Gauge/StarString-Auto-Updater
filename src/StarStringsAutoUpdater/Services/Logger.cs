@@ -1,4 +1,4 @@
-namespace StarStringAutoUpdater.Services;
+namespace StarStringsAutoUpdater.Services;
 
 public enum LogLevel
 {

@@ -1,11 +1,11 @@
-namespace StarStringAutoUpdater.Services;
+namespace StarStringsAutoUpdater.Services;
 
 /// <summary>Central home for everything the app persists, under %AppData%.</summary>
 public static class AppPaths
 {
     public static string RootFolder { get; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "StarStringAutoUpdater");
+        "StarStringsAutoUpdater");
 
     public static string SettingsFile => Path.Combine(RootFolder, "settings.json");
 

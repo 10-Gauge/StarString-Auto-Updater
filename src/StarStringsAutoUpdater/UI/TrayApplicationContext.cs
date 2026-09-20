@@ -1,8 +1,8 @@
 using System.Windows.Forms;
-using StarStringAutoUpdater.Models;
-using StarStringAutoUpdater.Services;
+using StarStringsAutoUpdater.Models;
+using StarStringsAutoUpdater.Services;
 
-namespace StarStringAutoUpdater.UI;
+namespace StarStringsAutoUpdater.UI;
 
 public sealed class TrayApplicationContext : ApplicationContext
 {
@@ -32,7 +32,7 @@ public sealed class TrayApplicationContext : ApplicationContext
         _trayIcon = new NotifyIcon
         {
             Icon = IconFactory.CreateTrayIcon(paused: !_settings.AutoCheckEnabled),
-            Text = "StarString Auto-Updater",
+            Text = "StarStrings Auto-Updater",
             ContextMenuStrip = _menu,
             Visible = true,
         };
@@ -46,7 +46,7 @@ public sealed class TrayApplicationContext : ApplicationContext
         _timer.Start();
 
         RefreshMenuState();
-        Logger.Info("StarString Auto-Updater started.");
+        Logger.Info("StarStrings Auto-Updater started.");
 
         _ = RunStartupSequenceAsync();
     }
@@ -89,10 +89,10 @@ public sealed class TrayApplicationContext : ApplicationContext
         if (!_settings.HasLiveFolder)
         {
             MessageBox.Show(
-                "StarString Auto-Updater keeps MrKraken's StarStrings global.ini up to date for Star Citizen LIVE.\n\n" +
+                "StarStrings Auto-Updater keeps MrKraken's StarStrings global.ini up to date for Star Citizen LIVE.\n\n" +
                 "First, please locate your Star Citizen LIVE folder (the one containing the \"data\" folder and user.cfg), " +
                 "e.g. ...\\Roberts Space Industries\\StarCitizen\\LIVE.",
-                "Welcome to StarString Auto-Updater",
+                "Welcome to StarStrings Auto-Updater",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             PromptForLiveFolder();
@@ -226,7 +226,7 @@ public sealed class TrayApplicationContext : ApplicationContext
 
     private void ShowBalloon(string message, bool isError)
     {
-        _trayIcon.BalloonTipTitle = isError ? "StarString Auto-Updater - Attention" : "StarString Auto-Updater";
+        _trayIcon.BalloonTipTitle = isError ? "StarStrings Auto-Updater - Attention" : "StarStrings Auto-Updater";
         _trayIcon.BalloonTipText = message;
         _trayIcon.BalloonTipIcon = isError ? ToolTipIcon.Warning : ToolTipIcon.Info;
         _trayIcon.ShowBalloonTip(6000);
@@ -242,14 +242,14 @@ public sealed class TrayApplicationContext : ApplicationContext
         var lastChecked = _settings.LastCheckedAtUtc?.ToLocalTime().ToString("g") ?? "never";
 
         _statusItem.Text = $"LIVE folder: {folderStatus} | Installed: {versionStatus} | Last checked: {lastChecked}";
-        _trayIcon.Text = Truncate($"StarString Auto-Updater - {(_settings.AutoCheckEnabled ? "running" : "stopped")}", 127);
+        _trayIcon.Text = Truncate($"StarStrings Auto-Updater - {(_settings.AutoCheckEnabled ? "running" : "stopped")}", 127);
     }
 
     private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max];
 
     private void ExitApplication()
     {
-        Logger.Info("StarString Auto-Updater exiting.");
+        Logger.Info("StarStrings Auto-Updater exiting.");
         _timer.Stop();
         _timer.Dispose();
         _trayIcon.Visible = false;
