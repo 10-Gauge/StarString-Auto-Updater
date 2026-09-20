@@ -15,6 +15,27 @@ public static class ZipInstaller
 {
     private const string GlobalIniSuffix = "data/localization/english/global.ini";
 
+    public static string GetGlobalIniPath(string liveFolderPath) =>
+        Path.Combine(liveFolderPath, "data", "Localization", "english", "global.ini");
+
+    public static string GetGlobalIniBackupPath(string liveFolderPath) =>
+        GetGlobalIniPath(liveFolderPath) + ".bak";
+
+    public static bool BackupExists(string liveFolderPath) =>
+        File.Exists(GetGlobalIniBackupPath(liveFolderPath));
+
+    /// <summary>Overwrites the current global.ini with the pre-update backup.</summary>
+    public static void RestoreBackup(string liveFolderPath)
+    {
+        var backupPath = GetGlobalIniBackupPath(liveFolderPath);
+        if (!File.Exists(backupPath))
+        {
+            throw new FileNotFoundException("No global.ini backup was found.", backupPath);
+        }
+
+        File.Copy(backupPath, GetGlobalIniPath(liveFolderPath), overwrite: true);
+    }
+
     public static InstallResult Install(string zipPath, string liveFolderPath)
     {
         if (!Directory.Exists(liveFolderPath))
@@ -34,8 +55,7 @@ public static class ZipInstaller
                 "The StarStrings release layout may have changed.");
         }
 
-        var targetGlobalIniPath = Path.Combine(
-            liveFolderPath, "data", "Localization", "english", "global.ini");
+        var targetGlobalIniPath = GetGlobalIniPath(liveFolderPath);
 
         var backedUp = BackupExistingGlobalIni(targetGlobalIniPath);
         ExtractEntryTo(globalIniEntry, targetGlobalIniPath);

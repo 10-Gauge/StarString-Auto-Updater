@@ -14,7 +14,8 @@ you first.
 - Checks the StarStrings "latest" release every 30 minutes (configurable, see below).
 - When it finds a genuinely new version, shows a dialog with the release name, publish date,
   and release notes, and asks **Install Now** or **Skip**.
-- Backs up your existing `global.ini` to `global.ini.bak` before overwriting it.
+- Backs up your existing `global.ini` to `global.ini.bak` before overwriting it, and lets you
+  restore that backup from the tray menu at any time.
 - Never touches an existing `user.cfg` — it only installs the bundled one if you don't have one
   yet, matching the StarStrings README's own install instructions.
 - Keeps two logs under `%AppData%\StarStringsAutoUpdater\logs\`:
@@ -22,7 +23,8 @@ you first.
   - `version-history.log` — one line per version actually installed, with timestamp, release
     name, and the zip's SHA-256 hash.
 - Tray icon right-click menu: **Start/Stop Auto-Check**, **Check for Updates Now**, **Change
-  Star Citizen LIVE Folder**, **Open Log Folder**, **Start with Windows** (toggle), **Exit**.
+  Star Citizen LIVE Folder**, **Open Log Folder**, **Restore Backup (global.ini.bak)**, **Start
+  with Windows** (toggle), **Exit**.
 
 ## Why this isn't a literal Windows Service
 
@@ -53,6 +55,18 @@ therefore compares:
 
 If you decline a version, the app won't nag you about that exact version again on automatic
 checks — but "Check for Updates Now" always re-prompts regardless.
+
+## Restoring a backup
+
+Every time the app installs a new `global.ini`, it first copies whatever was there to
+`global.ini.bak` (one rolling backup, not a history). The tray menu's **Restore Backup**
+item copies that file back over the current `global.ini` — it's greyed out if there's no
+Star Citizen LIVE folder set or no backup file present.
+
+Restoring also clears the app's "what's currently installed" bookkeeping, since the file on
+disk no longer matches what it last applied. That means the next check (automatic or manual)
+will treat the latest StarStrings release as new again and offer to reinstall it, rather than
+silently thinking nothing changed.
 
 ## Building
 

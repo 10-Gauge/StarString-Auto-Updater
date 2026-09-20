@@ -15,6 +15,7 @@ public sealed class TrayApplicationContext : ApplicationContext
     private ToolStripMenuItem _statusItem = null!;
     private ToolStripMenuItem _toggleAutoCheckItem = null!;
     private ToolStripMenuItem _checkNowItem = null!;
+    private ToolStripMenuItem _restoreBackupItem = null!;
     private ToolStripMenuItem _startWithWindowsItem = null!;
 
     private AppSettings _settings;
@@ -69,6 +70,12 @@ public sealed class TrayApplicationContext : ApplicationContext
 
         menu.Items.Add(new ToolStripMenuItem("Change Star Citizen LIVE Folder...", null, OnChangeLiveFolder));
         menu.Items.Add(new ToolStripMenuItem("Open Log Folder", null, (_, _) => OpenLogFolder()));
+
+        menu.Items.Add(new ToolStripSeparator());
+
+        _restoreBackupItem = new ToolStripMenuItem("Restore Backup (global.ini.bak)", null, OnRestoreBackup);
+        menu.Items.Add(_restoreBackupItem);
+        menu.Opening += (_, _) => RefreshRestoreBackupState();
 
         menu.Items.Add(new ToolStripSeparator());
 
@@ -205,6 +212,47 @@ public sealed class TrayApplicationContext : ApplicationContext
         ShowBalloon("Star Citizen LIVE folder updated.", isError: false);
     }
 
+    private void OnRestoreBackup(object? sender, EventArgs e)
+    {
+        if (!_settings.HasLiveFolder || !ZipInstaller.BackupExists(_settings.LiveFolderPath!))
+        {
+            ShowBalloon("No global.ini backup was found to restore.", isError: true);
+            return;
+        }
+
+        var confirm = MessageBox.Show(
+            "This will overwrite your current global.ini with the backup taken before the last " +
+            "update (global.ini.bak). The app will treat this as reverted and offer to reinstall " +
+            "the latest StarStrings version again next time it checks.\n\nRestore the backup now?",
+            "Restore Backup", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+        if (confirm != DialogResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            ZipInstaller.RestoreBackup(_settings.LiveFolderPath!);
+            _settings.ResetInstalledVersionTracking();
+            _settingsService.Save(_settings);
+            Logger.Info("Restored global.ini from backup at the user's request.");
+            ShowBalloon("global.ini restored from backup.", isError: false);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Failed to restore global.ini from backup: {ex.Message}");
+            ShowBalloon("Failed to restore the backup. See log for details.", isError: true);
+        }
+
+        RefreshMenuState();
+    }
+
+    private void RefreshRestoreBackupState()
+    {
+        _restoreBackupItem.Enabled = _settings.HasLiveFolder && ZipInstaller.BackupExists(_settings.LiveFolderPath!);
+    }
+
     private void OnToggleStartWithWindows(object? sender, EventArgs e)
     {
         _settings.StartWithWindows = !_settings.StartWithWindows;
@@ -236,6 +284,7 @@ public sealed class TrayApplicationContext : ApplicationContext
     {
         _toggleAutoCheckItem.Text = _settings.AutoCheckEnabled ? "Stop Auto-Check" : "Start Auto-Check";
         _startWithWindowsItem.Checked = _settings.StartWithWindows;
+        RefreshRestoreBackupState();
 
         var folderStatus = _settings.HasLiveFolder ? _settings.LiveFolderPath! : "not set - right-click to choose";
         var versionStatus = _settings.LastAppliedReleaseName ?? "none installed yet";

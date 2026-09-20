@@ -34,4 +34,16 @@ public sealed class AppSettings
 
     [JsonIgnore]
     public bool HasLiveFolder => !string.IsNullOrWhiteSpace(LiveFolderPath);
+
+    /// <summary>Clears the "what's currently installed" bookkeeping. Call this whenever the
+    /// global.ini on disk no longer matches what we last applied (e.g. after a manual
+    /// restore-from-backup), so the next check treats any available release as new again.</summary>
+    public void ResetInstalledVersionTracking()
+    {
+        LastAppliedPublishedAt = null;
+        LastAppliedZipSha256 = null;
+        LastAppliedReleaseName = null;
+        LastAppliedAtUtc = null;
+        LastDeclinedPublishedAt = null;
+    }
 }
