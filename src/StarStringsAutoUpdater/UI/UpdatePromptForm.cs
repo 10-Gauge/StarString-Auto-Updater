@@ -108,11 +108,15 @@ public sealed class UpdatePromptForm : Form
             Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
         };
 
+        // Set the final size *before* adding the anchored controls: anchoring locks in
+        // each control's distance from the right/bottom edges at the moment it's parented,
+        // so adding them while the form is still at its small default size (then resizing)
+        // would fling the Bottom/Right-anchored controls off the visible client area.
+        ClientSize = new Size(Margin * 2 + ContentWidth, buttonsTop + ButtonHeight + Margin);
+
         Controls.AddRange([heading, subheading, notesLabel, notesBox, installButton, skipButton]);
         AcceptButton = installButton;
         CancelButton = skipButton;
-
-        ClientSize = new Size(Margin * 2 + ContentWidth, buttonsTop + ButtonHeight + Margin);
     }
 
     private static int MeasureTextHeight(string text, Font font, int width) =>
