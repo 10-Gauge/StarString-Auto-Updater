@@ -8,11 +8,11 @@ namespace StarStringAutoUpdater.UI;
 /// Draws the tray icon at runtime instead of shipping a binary .ico asset,
 /// so the whole app is buildable from source with nothing but the SDK.
 /// </summary>
-public static partial class IconFactory
+public static class IconFactory
 {
-    [LibraryImport("user32.dll")]
+    [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool DestroyIcon(IntPtr handle);
+    private static extern bool DestroyIcon(IntPtr handle);
 
     public static Icon CreateTrayIcon(bool paused = false)
     {
