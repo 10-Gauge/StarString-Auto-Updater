@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationVisualStyles>true</ApplicationVisualStyles>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <AssemblyName>StarStringAutoUpdater</AssemblyName>
+    <RootNamespace>StarStringAutoUpdater</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <!-- Publish as a single self-contained win-x64 executable -->
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+
+    <Product>StarString Auto-Updater</Product>
+    <AssemblyTitle>StarString Auto-Updater</AssemblyTitle>
+    <Description>Keeps MrKraken's StarStrings global.ini up to date for Star Citizen LIVE.</Description>
+    <Company>StarString Auto-Updater Project</Company>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+</Project>
