@@ -9,7 +9,7 @@ public sealed class AboutForm : Form
     private const int ContentWidth = 360;
     private const int Margin = 20;
 
-    public AboutForm()
+    public AboutForm(string appVersionText)
     {
         Text = "About StarStrings Auto-Updater";
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -32,7 +32,7 @@ public sealed class AboutForm : Form
             Padding = new Padding(Margin),
         };
 
-        root.Controls.Add(BuildHeader());
+        root.Controls.Add(BuildHeader(appVersionText));
 
         root.Controls.Add(Theme.CreateLinkLine(
             ContentWidth,
@@ -63,7 +63,7 @@ public sealed class AboutForm : Form
         Controls.Add(root);
     }
 
-    private static Control BuildHeader()
+    private static Control BuildHeader(string appVersionText)
     {
         Bitmap headerBitmap;
         using (var headerIcon = IconFactory.CreateTrayIcon(size: 48))
@@ -87,17 +87,36 @@ public sealed class AboutForm : Form
             Margin = new Padding(0, 0, 12, 0),
         };
 
+        var textColumn = new FlowLayoutPanel
+        {
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+        };
+
         var title = new Label
         {
             Text = "StarStrings Auto-Updater",
             Font = Theme.FontHeading,
             ForeColor = Theme.TextPrimary,
             AutoSize = true,
-            Margin = new Padding(0, 6, 0, 0),
         };
 
+        var versionLabel = new Label
+        {
+            Text = appVersionText,
+            Font = Theme.FontSmall,
+            ForeColor = Theme.TextSecondary,
+            AutoSize = true,
+            Margin = new Padding(0, 2, 0, 0),
+        };
+
+        textColumn.Controls.Add(title);
+        textColumn.Controls.Add(versionLabel);
+
         panel.Controls.Add(pictureBox);
-        panel.Controls.Add(title);
+        panel.Controls.Add(textColumn);
         return panel;
     }
 }

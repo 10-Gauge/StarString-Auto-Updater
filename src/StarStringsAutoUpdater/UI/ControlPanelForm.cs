@@ -35,6 +35,7 @@ public sealed class ControlPanelForm : Form
     ];
 
     private readonly ControlPanelActions _actions;
+    private readonly string _appVersionText;
 
     private AppSettings _settings;
     private Label _statusValue = null!;
@@ -53,6 +54,7 @@ public sealed class ControlPanelForm : Form
     {
         _settings = settings;
         _actions = actions;
+        _appVersionText = appVersionText;
 
         Text = "StarStrings Auto-Updater - Control Panel";
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -313,7 +315,19 @@ public sealed class ControlPanelForm : Form
 
         var aboutButton = Theme.CreateButton("About", Theme.CardBackgroundAlt, Theme.CardBackgroundHover, Theme.TextPrimary);
         aboutButton.Margin = Padding.Empty;
-        aboutButton.Click += (_, _) => new AboutForm().ShowDialog(this);
+        aboutButton.Click += (_, _) => new AboutForm(_appVersionText).ShowDialog(this);
+
+        var versionLabel = new Label
+        {
+            Text = _appVersionText,
+            AutoSize = true,
+            Font = Theme.FontSmall,
+            ForeColor = Theme.TextSecondary,
+            BackColor = Theme.Background,
+        };
+        // Vertically center the shorter label against the taller button beside it.
+        var versionTopOffset = Math.Max(0, (aboutButton.PreferredSize.Height - versionLabel.PreferredSize.Height) / 2);
+        versionLabel.Margin = new Padding(ButtonGap, versionTopOffset, 0, 0);
 
         var exitButton = Theme.CreateButton("Exit App", Theme.Danger, Theme.DangerHover);
         exitButton.Margin = Padding.Empty;
@@ -323,11 +337,14 @@ public sealed class ControlPanelForm : Form
         closeButton.Margin = Padding.Empty;
         closeButton.Click += (_, _) => Close();
 
-        var usedWidth = aboutButton.PreferredSize.Width + exitButton.PreferredSize.Width + closeButton.PreferredSize.Width + ButtonGap;
+        var usedWidth = aboutButton.PreferredSize.Width
+            + versionLabel.Margin.Left + versionLabel.PreferredSize.Width
+            + exitButton.PreferredSize.Width + closeButton.PreferredSize.Width + ButtonGap;
         var spacer = new Panel { Width = Math.Max(0, CardWidth - usedWidth), Height = 1, Margin = Padding.Empty, BackColor = Theme.Background };
         var buttonGap = new Panel { Width = ButtonGap, Height = 1, Margin = Padding.Empty, BackColor = Theme.Background };
 
         row.Controls.Add(aboutButton);
+        row.Controls.Add(versionLabel);
         row.Controls.Add(spacer);
         row.Controls.Add(exitButton);
         row.Controls.Add(buttonGap);
