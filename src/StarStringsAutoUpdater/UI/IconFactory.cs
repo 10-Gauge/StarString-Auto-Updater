@@ -14,9 +14,8 @@ public static class IconFactory
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool DestroyIcon(IntPtr handle);
 
-    public static Icon CreateTrayIcon(bool paused = false)
+    public static Icon CreateTrayIcon(bool paused = false, int size = 32)
     {
-        const int size = 32;
         using var bitmap = new Bitmap(size, size);
         using (var g = Graphics.FromImage(bitmap))
         {
@@ -29,7 +28,7 @@ public static class IconFactory
                 g.FillEllipse(brush, 1, 1, size - 2, size - 2);
             }
 
-            using var font = new Font("Segoe UI", 15f, FontStyle.Bold, GraphicsUnit.Pixel);
+            using var font = new Font("Segoe UI", size * 0.47f, FontStyle.Bold, GraphicsUnit.Pixel);
             using var textBrush = new SolidBrush(Color.White);
             var text = "S";
             var textSize = g.MeasureString(text, font);

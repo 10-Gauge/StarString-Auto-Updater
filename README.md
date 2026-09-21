@@ -10,6 +10,11 @@ you first.
 
 ## What it does
 
+- **Double-click the tray icon to open the Control Panel** — a dark-themed dashboard with every
+  action the app can perform: live status, the StarStrings content check (folder, installed
+  version, last checked, Check Now), the check schedule (start/stop, interval presets/custom),
+  maintenance (Restore Backup, Open Log Folder), Start with Windows, and Exit. It stays live while
+  open — every action it triggers updates the panel immediately, no need to close and reopen it.
 - Runs quietly in the system tray, starting automatically when you log into Windows.
 - Checks the StarStrings "latest" release every 30 minutes by default — adjustable from the
   tray menu's **Check Interval** submenu (30 min / 60 min / 3 hr / 12 hr / daily presets, or
@@ -27,9 +32,9 @@ you first.
 - Also checks for new releases of itself (see "Updating the app itself" below) and offers to
   download them, on the same schedule as the StarStrings content check.
 - Shows the running app version at the top of the tray menu and in the tray icon's tooltip.
-- Tray icon right-click menu: **Start/Stop Auto-Check**, **Check for Updates Now**, **Check
-  Interval** (submenu), **Change Star Citizen LIVE Folder**, **Open Log Folder**, **Restore
-  Backup (global.ini.bak)**, **Start with Windows** (toggle), **Exit**.
+- Tray icon right-click menu: **Open Control Panel...**, **Start/Stop Auto-Check**, **Check for
+  Updates Now**, **Check Interval** (submenu), **Change Star Citizen LIVE Folder**, **Open Log
+  Folder**, **Restore Backup (global.ini.bak)**, **Start with Windows** (toggle), **Exit**.
 
 ## Why this isn't a literal Windows Service
 
@@ -124,9 +129,10 @@ Release.
    C:\Program Files\Roberts Space Industries\StarCitizen\LIVE
    ```
 3. It performs an initial check right away, and every 30 minutes after that (while running).
-4. Right-click the tray icon any time to check manually, change the folder, stop/start
-   automatic checking, or adjust the check interval (**Check Interval** submenu → a preset,
-   or **Custom...** for any hours:minutes combination, minimum 5 minutes).
+4. Double-click the tray icon (or right-click → **Open Control Panel...**) for a single dashboard
+   with every option: check manually, change the folder, stop/start automatic checking, adjust
+   the check interval, restore a backup, open the log folder, or toggle Start with Windows.
+   Everything is also still available individually from the right-click menu.
 
 Settings live in `%AppData%\StarStringsAutoUpdater\settings.json`, including
 `CheckIntervalMinutes` if you'd rather edit it directly (restart the app afterward).

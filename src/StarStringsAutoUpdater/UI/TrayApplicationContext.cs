@@ -13,6 +13,7 @@ public sealed class TrayApplicationContext : ApplicationContext
     private readonly ContextMenuStrip _menu;
     private readonly System.Windows.Forms.Timer _timer;
     private readonly string _appVersionText = FormatVersion(SelfUpdateService.GetCurrentVersion());
+    private ControlPanelForm? _controlPanel;
 
     private ToolStripMenuItem _appVersionItem = null!;
     private ToolStripMenuItem _statusItem = null!;
@@ -47,7 +48,7 @@ public sealed class TrayApplicationContext : ApplicationContext
             ContextMenuStrip = _menu,
             Visible = true,
         };
-        _trayIcon.DoubleClick += (_, _) => _ = PerformCheckAsync(manualTrigger: true);
+        _trayIcon.DoubleClick += (_, _) => ShowControlPanel();
 
         _timer = new System.Windows.Forms.Timer
         {
@@ -71,6 +72,9 @@ public sealed class TrayApplicationContext : ApplicationContext
 
         _statusItem = new ToolStripMenuItem("Status: starting...") { Enabled = false };
         menu.Items.Add(_statusItem);
+        menu.Items.Add(new ToolStripSeparator());
+
+        menu.Items.Add(new ToolStripMenuItem("Open Control Panel...", null, (_, _) => ShowControlPanel()));
         menu.Items.Add(new ToolStripSeparator());
 
         _toggleAutoCheckItem = new ToolStripMenuItem("Stop Auto-Check", null, OnToggleAutoCheck);
@@ -160,6 +164,10 @@ public sealed class TrayApplicationContext : ApplicationContext
         _checkInProgress = true;
         _checkNowItem.Enabled = false;
         _statusItem.Text = "Status: checking for updates...";
+        if (_controlPanel is { IsDisposed: false } checkingPanel)
+        {
+            checkingPanel.SetChecking();
+        }
 
         try
         {
@@ -284,7 +292,7 @@ public sealed class TrayApplicationContext : ApplicationContext
         _intervalCustomItem.Text = isPreset ? "Custom..." : $"Custom... ({FormatInterval(minutes)})";
     }
 
-    private static string FormatInterval(int totalMinutes)
+    internal static string FormatInterval(int totalMinutes)
     {
         var hours = totalMinutes / 60;
         var minutes = totalMinutes % 60;
@@ -294,6 +302,36 @@ public sealed class TrayApplicationContext : ApplicationContext
             (_, 0) => $"{hours}h",
             _ => $"{hours}h {minutes}m",
         };
+    }
+
+    private void ShowControlPanel()
+    {
+        if (_controlPanel is { IsDisposed: false })
+        {
+            _controlPanel.Activate();
+            return;
+        }
+
+        _controlPanel = new ControlPanelForm(_settings, _appVersionText, new ControlPanelActions(
+            CheckNow: () => _ = PerformCheckAsync(manualTrigger: true),
+            ChangeLiveFolder: PromptForLiveFolder,
+            ToggleAutoCheck: () => OnToggleAutoCheck(null, EventArgs.Empty),
+            SetInterval: SetCheckInterval,
+            CustomInterval: () => OnCustomInterval(null, EventArgs.Empty),
+            RestoreBackup: () => OnRestoreBackup(null, EventArgs.Empty),
+            OpenLogFolder: OpenLogFolder,
+            ToggleStartWithWindows: () => OnToggleStartWithWindows(null, EventArgs.Empty),
+            Exit: ExitApplication));
+
+        try
+        {
+            _controlPanel.ShowDialog();
+        }
+        finally
+        {
+            _controlPanel.Dispose();
+            _controlPanel = null;
+        }
     }
 
     private void OnChangeLiveFolder(object? sender, EventArgs e) => PromptForLiveFolder();
@@ -418,6 +456,11 @@ public sealed class TrayApplicationContext : ApplicationContext
         _statusItem.Text = $"LIVE folder: {folderStatus} | Installed: {versionStatus} | Last checked: {lastChecked}";
         _trayIcon.Text = Truncate(
             $"StarStrings Auto-Updater {_appVersionText} - {(_settings.AutoCheckEnabled ? "running" : "stopped")}", 127);
+
+        if (_controlPanel is { IsDisposed: false } panel)
+        {
+            panel.RefreshFromSettings(_settings);
+        }
     }
 
     private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max];
