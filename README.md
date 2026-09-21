@@ -11,7 +11,9 @@ you first.
 ## What it does
 
 - Runs quietly in the system tray, starting automatically when you log into Windows.
-- Checks the StarStrings "latest" release every 30 minutes (configurable, see below).
+- Checks the StarStrings "latest" release every 30 minutes by default — adjustable from the
+  tray menu's **Check Interval** submenu (30 min / 60 min / 3 hr / 12 hr / daily presets, or
+  **Custom...** for any hours:minutes combination).
 - When it finds a genuinely new version, shows a dialog with the release name, publish date,
   and release notes, and asks **Install Now** or **Skip**.
 - Backs up your existing `global.ini` to `global.ini.bak` before overwriting it, and lets you
@@ -25,9 +27,9 @@ you first.
 - Also checks for new releases of itself (see "Updating the app itself" below) and offers to
   download them, on the same schedule as the StarStrings content check.
 - Shows the running app version at the top of the tray menu and in the tray icon's tooltip.
-- Tray icon right-click menu: **Start/Stop Auto-Check**, **Check for Updates Now**, **Change
-  Star Citizen LIVE Folder**, **Open Log Folder**, **Restore Backup (global.ini.bak)**, **Start
-  with Windows** (toggle), **Exit**.
+- Tray icon right-click menu: **Start/Stop Auto-Check**, **Check for Updates Now**, **Check
+  Interval** (submenu), **Change Star Citizen LIVE Folder**, **Open Log Folder**, **Restore
+  Backup (global.ini.bak)**, **Start with Windows** (toggle), **Exit**.
 
 ## Why this isn't a literal Windows Service
 
@@ -122,12 +124,12 @@ Release.
    C:\Program Files\Roberts Space Industries\StarCitizen\LIVE
    ```
 3. It performs an initial check right away, and every 30 minutes after that (while running).
-4. Right-click the tray icon any time to check manually, change the folder, or stop/start
-   automatic checking.
+4. Right-click the tray icon any time to check manually, change the folder, stop/start
+   automatic checking, or adjust the check interval (**Check Interval** submenu → a preset,
+   or **Custom...** for any hours:minutes combination, minimum 5 minutes).
 
-Settings live in `%AppData%\StarStringsAutoUpdater\settings.json` — you can edit
-`CheckIntervalMinutes` there if you want a different check frequency than 30 minutes (restart
-the app afterward).
+Settings live in `%AppData%\StarStringsAutoUpdater\settings.json`, including
+`CheckIntervalMinutes` if you'd rather edit it directly (restart the app afterward).
 
 ## Known limitations / notes
 

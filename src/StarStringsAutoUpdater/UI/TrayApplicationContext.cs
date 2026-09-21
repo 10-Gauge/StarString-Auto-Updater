@@ -20,6 +20,12 @@ public sealed class TrayApplicationContext : ApplicationContext
     private ToolStripMenuItem _checkNowItem = null!;
     private ToolStripMenuItem _restoreBackupItem = null!;
     private ToolStripMenuItem _startWithWindowsItem = null!;
+    private ToolStripMenuItem _interval30Item = null!;
+    private ToolStripMenuItem _interval60Item = null!;
+    private ToolStripMenuItem _interval180Item = null!;
+    private ToolStripMenuItem _interval720Item = null!;
+    private ToolStripMenuItem _interval1440Item = null!;
+    private ToolStripMenuItem _intervalCustomItem = null!;
 
     private AppSettings _settings;
     private bool _checkInProgress;
@@ -72,6 +78,20 @@ public sealed class TrayApplicationContext : ApplicationContext
 
         _checkNowItem = new ToolStripMenuItem("Check for Updates Now", null, async (_, _) => await PerformCheckAsync(manualTrigger: true));
         menu.Items.Add(_checkNowItem);
+
+        var intervalMenu = new ToolStripMenuItem("Check Interval");
+        _interval30Item = new ToolStripMenuItem("Every 30 Minutes", null, (_, _) => SetCheckInterval(30));
+        _interval60Item = new ToolStripMenuItem("Every 60 Minutes", null, (_, _) => SetCheckInterval(60));
+        _interval180Item = new ToolStripMenuItem("Every 3 Hours", null, (_, _) => SetCheckInterval(180));
+        _interval720Item = new ToolStripMenuItem("Every 12 Hours", null, (_, _) => SetCheckInterval(720));
+        _interval1440Item = new ToolStripMenuItem("Daily", null, (_, _) => SetCheckInterval(1440));
+        _intervalCustomItem = new ToolStripMenuItem("Custom...", null, OnCustomInterval);
+        intervalMenu.DropDownItems.AddRange([
+            _interval30Item, _interval60Item, _interval180Item, _interval720Item, _interval1440Item,
+            new ToolStripSeparator(),
+            _intervalCustomItem,
+        ]);
+        menu.Items.Add(intervalMenu);
 
         menu.Items.Add(new ToolStripSeparator());
 
@@ -224,6 +244,58 @@ public sealed class TrayApplicationContext : ApplicationContext
         }
     }
 
+    private void SetCheckInterval(int minutes)
+    {
+        if (_settings.CheckIntervalMinutes == minutes)
+        {
+            return;
+        }
+
+        _settings.CheckIntervalMinutes = minutes;
+        _settingsService.Save(_settings);
+
+        _timer.Stop();
+        _timer.Interval = minutes * 60_000;
+        _timer.Start();
+
+        Logger.Info($"Check interval set to {FormatInterval(minutes)}.");
+        RefreshMenuState();
+    }
+
+    private void OnCustomInterval(object? sender, EventArgs e)
+    {
+        if (CustomIntervalForm.TryAskForInterval(_settings.CheckIntervalMinutes, out var totalMinutes))
+        {
+            SetCheckInterval(totalMinutes);
+        }
+    }
+
+    private void RefreshCheckIntervalMenu()
+    {
+        var minutes = _settings.CheckIntervalMinutes;
+        _interval30Item.Checked = minutes == 30;
+        _interval60Item.Checked = minutes == 60;
+        _interval180Item.Checked = minutes == 180;
+        _interval720Item.Checked = minutes == 720;
+        _interval1440Item.Checked = minutes == 1440;
+
+        var isPreset = minutes is 30 or 60 or 180 or 720 or 1440;
+        _intervalCustomItem.Checked = !isPreset;
+        _intervalCustomItem.Text = isPreset ? "Custom..." : $"Custom... ({FormatInterval(minutes)})";
+    }
+
+    private static string FormatInterval(int totalMinutes)
+    {
+        var hours = totalMinutes / 60;
+        var minutes = totalMinutes % 60;
+        return (hours, minutes) switch
+        {
+            (0, _) => $"{minutes}m",
+            (_, 0) => $"{hours}h",
+            _ => $"{hours}h {minutes}m",
+        };
+    }
+
     private void OnChangeLiveFolder(object? sender, EventArgs e) => PromptForLiveFolder();
 
     private void PromptForLiveFolder()
@@ -337,6 +409,7 @@ public sealed class TrayApplicationContext : ApplicationContext
         _toggleAutoCheckItem.Text = _settings.AutoCheckEnabled ? "Stop Auto-Check" : "Start Auto-Check";
         _startWithWindowsItem.Checked = _settings.StartWithWindows;
         RefreshRestoreBackupState();
+        RefreshCheckIntervalMenu();
 
         var folderStatus = _settings.HasLiveFolder ? _settings.LiveFolderPath! : "not set - right-click to choose";
         var versionStatus = _settings.LastAppliedReleaseName ?? "none installed yet";
