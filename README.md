@@ -18,8 +18,9 @@ you first.
   live while open — every action it triggers updates the panel immediately, no need to close and
   reopen it.
 - Runs quietly in the system tray, starting automatically when you log into Windows.
-- Custom icon (a star badge with a sync arc) used for the tray icon, the exe itself, and the
-  Control Panel — it switches to a grayscale variant while auto-check is paused.
+- Custom icon used for the tray icon, the exe itself, and the Control Panel: MrKraken's
+  StarStrings mark (from his GitHub avatar) wrapped in a sync arc to signify auto-updating,
+  on a dark badge — it switches to a grayscale variant while auto-check is paused.
 - Checks the StarStrings "latest" release every 30 minutes by default — adjustable from the
   tray menu's **Check Interval** submenu (30 min / 60 min / 3 hr / 12 hr / daily presets, or
   **Custom...** for any hours:minutes combination).
