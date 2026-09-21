@@ -323,7 +323,6 @@ public sealed class ControlPanelForm : Form
             ActiveLinkColor = Theme.AccentHover,
             VisitedLinkColor = Theme.Accent,
             LinkBehavior = LinkBehavior.HoverUnderline,
-            AutoDetectUrls = false,
             // Suppress the default whole-text auto-link so only the explicit
             // Links entries below (not the rest of the sentence) render as clickable.
             LinkArea = new LinkArea(0, 0),
