@@ -23,7 +23,7 @@
     <AssemblyTitle>StarStrings Auto-Updater</AssemblyTitle>
     <Description>Keeps MrKraken's StarStrings global.ini up to date for Star Citizen LIVE.</Description>
     <Company>StarStrings Auto-Updater Project</Company>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
 </Project>

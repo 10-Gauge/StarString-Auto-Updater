@@ -17,10 +17,14 @@ public static class AppPaths
 
     public static string DownloadCacheFolder => Path.Combine(RootFolder, "cache");
 
+    /// <summary>Where downloaded app self-updates land, e.g. StarStringsAutoUpdater-v1.2.0.exe.</summary>
+    public static string UpdatesFolder => Path.Combine(RootFolder, "updates");
+
     public static void EnsureFoldersExist()
     {
         Directory.CreateDirectory(RootFolder);
         Directory.CreateDirectory(LogsFolder);
         Directory.CreateDirectory(DownloadCacheFolder);
+        Directory.CreateDirectory(UpdatesFolder);
     }
 }

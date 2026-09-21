@@ -8,9 +8,13 @@ public sealed class GitHubReleaseClient : IDisposable
 {
     // The StarStrings release workflow deletes and recreates the "latest" tag/release
     // on every push to master, so the tag name never changes across versions — only
-    // the release's published_at, name, and asset content do. See releases/tags/latest.
-    private const string ReleaseApiUrl = "https://api.github.com/repos/MrKraken/StarStrings/releases/tags/latest";
-    private const string ExpectedAssetName = "StarStrings-LIVE.zip";
+    // the release's published_at, name, and asset content do.
+    public const string StarStringsLatestReleaseUrl = "https://api.github.com/repos/MrKraken/StarStrings/releases/tags/latest";
+    private const string StarStringsExpectedAssetName = "StarStrings-LIVE.zip";
+
+    // Our own repo uses ordinary semver tags, so the normal "latest release" endpoint
+    // (most recent non-draft, non-prerelease release) works as expected here.
+    public const string AppLatestReleaseUrl = "https://api.github.com/repos/10-Gauge/StarStrings-Auto-Updater/releases/latest";
 
     private readonly HttpClient _http;
 
@@ -25,9 +29,9 @@ public sealed class GitHubReleaseClient : IDisposable
         _http.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
     }
 
-    public async Task<GitHubRelease> GetLatestReleaseAsync(CancellationToken ct)
+    public async Task<GitHubRelease> GetLatestReleaseAsync(string releaseApiUrl, CancellationToken ct)
     {
-        using var response = await _http.GetAsync(ReleaseApiUrl, ct).ConfigureAwait(false);
+        using var response = await _http.GetAsync(releaseApiUrl, ct).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -50,10 +54,10 @@ public sealed class GitHubReleaseClient : IDisposable
     /// <summary>Finds the StarStrings-LIVE.zip asset on a release, falling back to
     /// any single .zip asset if the expected name isn't present (defensive against
     /// the upstream workflow changing its asset naming).</summary>
-    public static GitHubReleaseAsset? FindLiveZipAsset(GitHubRelease release)
+    public static GitHubReleaseAsset? FindStarStringsLiveZipAsset(GitHubRelease release)
     {
         var exact = release.Assets.FirstOrDefault(a =>
-            string.Equals(a.Name, ExpectedAssetName, StringComparison.OrdinalIgnoreCase));
+            string.Equals(a.Name, StarStringsExpectedAssetName, StringComparison.OrdinalIgnoreCase));
         if (exact is not null)
         {
             return exact;
@@ -61,6 +65,15 @@ public sealed class GitHubReleaseClient : IDisposable
 
         var zips = release.Assets.Where(a => a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).ToList();
         return zips.Count == 1 ? zips[0] : null;
+    }
+
+    /// <summary>Finds this app's own release exe. The filename is version-qualified
+    /// (e.g. StarStringsAutoUpdater-v1.2.0.exe), so this just looks for the release's
+    /// single .exe asset rather than matching an exact name.</summary>
+    public static GitHubReleaseAsset? FindAppExeAsset(GitHubRelease release)
+    {
+        var exes = release.Assets.Where(a => a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).ToList();
+        return exes.Count == 1 ? exes[0] : null;
     }
 
     public async Task DownloadFileAsync(string url, string destinationPath, CancellationToken ct)

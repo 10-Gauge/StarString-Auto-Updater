@@ -11,9 +11,23 @@ internal static class Program
     [STAThread]
     private static void Main(string[] args)
     {
-        using var mutex = new Mutex(initiallyOwned: true, SingleInstanceMutexName, out var createdNew);
+        using var mutex = new Mutex(initiallyOwned: false, SingleInstanceMutexName);
 
-        if (!createdNew)
+        bool acquired;
+        try
+        {
+            // Wait briefly rather than failing immediately: a self-update relaunches the
+            // new exe and then exits the old one, so the new instance may start a moment
+            // before the old one has actually released the mutex.
+            acquired = mutex.WaitOne(TimeSpan.FromSeconds(5));
+        }
+        catch (AbandonedMutexException)
+        {
+            // The previous owner exited without releasing it (e.g. crashed); we now own it.
+            acquired = true;
+        }
+
+        if (!acquired)
         {
             MessageBox.Show(
                 "StarStrings Auto-Updater is already running. Check your system tray.",
@@ -31,8 +45,13 @@ internal static class Program
         Application.ThreadException += (_, e) =>
             Logger.Error($"UI thread exception: {e.Exception}");
 
-        Application.Run(new TrayApplicationContext());
-
-        GC.KeepAlive(mutex);
+        try
+        {
+            Application.Run(new TrayApplicationContext());
+        }
+        finally
+        {
+            mutex.ReleaseMutex();
+        }
     }
 }

@@ -32,6 +32,11 @@ public sealed class AppSettings
 
     public DateTimeOffset? LastCheckedAtUtc { get; set; }
 
+    /// <summary>App (not StarStrings content) release tag the user was already prompted
+    /// about and either declined or downloaded-but-didn't-restart-into, so automatic
+    /// checks don't nag about the same app version repeatedly.</summary>
+    public string? LastDeclinedAppVersion { get; set; }
+
     [JsonIgnore]
     public bool HasLiveFolder => !string.IsNullOrWhiteSpace(LiveFolderPath);
 

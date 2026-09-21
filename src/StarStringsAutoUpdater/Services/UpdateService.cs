@@ -41,7 +41,7 @@ public sealed class UpdateService : IDisposable
         GitHubRelease release;
         try
         {
-            release = await _client.GetLatestReleaseAsync(ct);
+            release = await _client.GetLatestReleaseAsync(GitHubReleaseClient.StarStringsLatestReleaseUrl, ct);
         }
         catch (Exception ex)
         {
@@ -50,7 +50,7 @@ public sealed class UpdateService : IDisposable
             return CheckOutcome.Error;
         }
 
-        var asset = GitHubReleaseClient.FindLiveZipAsset(release);
+        var asset = GitHubReleaseClient.FindStarStringsLiveZipAsset(release);
         if (asset is null)
         {
             Logger.Error($"Release '{release.Name}' has no recognizable StarStrings-LIVE.zip asset.");

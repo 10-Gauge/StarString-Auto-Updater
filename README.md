@@ -22,6 +22,9 @@ you first.
   - `update.log` — general activity/diagnostics (checks, downloads, errors).
   - `version-history.log` — one line per version actually installed, with timestamp, release
     name, and the zip's SHA-256 hash.
+- Also checks for new releases of itself (see "Updating the app itself" below) and offers to
+  download them, on the same schedule as the StarStrings content check.
+- Shows the running app version at the top of the tray menu and in the tray icon's tooltip.
 - Tray icon right-click menu: **Start/Stop Auto-Check**, **Check for Updates Now**, **Change
   Star Citizen LIVE Folder**, **Open Log Folder**, **Restore Backup (global.ini.bak)**, **Start
   with Windows** (toggle), **Exit**.
@@ -68,6 +71,30 @@ disk no longer matches what it last applied. That means the next check (automati
 will treat the latest StarStrings release as new again and offer to reinstall it, rather than
 silently thinking nothing changed.
 
+## Updating the app itself
+
+Separately from StarStrings content updates, the app checks GitHub for a newer release of
+**itself** (`10-Gauge/StarStrings-Auto-Updater`) on the same schedule as the content check.
+Unlike the StarStrings repo, this one uses ordinary semver tags, so it just reads GitHub's
+normal "latest release" endpoint and compares it (Major.Minor.Build only) against the running
+build's own version.
+
+If a newer version is found, it shows a prompt with the release notes and a **Download**
+button. It deliberately does **not** silently replace the running exe in place — Windows
+won't let a running executable overwrite itself anyway — so instead:
+
+1. It downloads the new version's exe to `%AppData%\StarStringsAutoUpdater\updates\`.
+2. It asks whether to restart into it now. If you say yes, it launches the new exe as an
+   independent process and exits — the new instance then re-registers the "start with
+   Windows" registry entry to point at its own (new) path, so future logins launch the
+   updated version automatically.
+3. If you say no (or just close that prompt), the new exe stays in the updates folder for
+   you to run whenever you like, and the app won't ask about that same version again until
+   a newer one is published.
+
+Each release's `.exe` is named with its version, e.g. `StarStringsAutoUpdater-v1.2.0.exe`,
+so downloaded builds are easy to tell apart.
+
 ## Building
 
 Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) on a Windows,
@@ -113,5 +140,7 @@ the app afterward).
   `StarStrings-PTU.zip`) that this app deliberately ignores — its own README recommends against
   using custom strings on PTU anyway, since new builds frequently add strings the pack hasn't
   caught up with yet.
-- GitHub's public API is unauthenticated here (no token), which allows 60 requests/hour per IP
-  — comfortably enough for a 30-minute check interval.
+- GitHub's public API is unauthenticated here (no token), which allows 60 requests/hour per IP.
+  Each check makes at most two API calls (StarStrings content + the app's own release) plus a
+  download or two when something's actually new — comfortably within the limit at the default
+  30-minute check interval.

@@ -8,10 +8,13 @@ public sealed class TrayApplicationContext : ApplicationContext
 {
     private readonly SettingsService _settingsService = new();
     private readonly UpdateService _updateService = new();
+    private readonly SelfUpdateService _selfUpdateService = new();
     private readonly NotifyIcon _trayIcon;
     private readonly ContextMenuStrip _menu;
     private readonly System.Windows.Forms.Timer _timer;
+    private readonly string _appVersionText = FormatVersion(SelfUpdateService.GetCurrentVersion());
 
+    private ToolStripMenuItem _appVersionItem = null!;
     private ToolStripMenuItem _statusItem = null!;
     private ToolStripMenuItem _toggleAutoCheckItem = null!;
     private ToolStripMenuItem _checkNowItem = null!;
@@ -20,6 +23,7 @@ public sealed class TrayApplicationContext : ApplicationContext
 
     private AppSettings _settings;
     private bool _checkInProgress;
+    private bool _isExiting;
 
     public TrayApplicationContext()
     {
@@ -55,6 +59,9 @@ public sealed class TrayApplicationContext : ApplicationContext
     private ContextMenuStrip BuildMenu()
     {
         var menu = new ContextMenuStrip();
+
+        _appVersionItem = new ToolStripMenuItem($"StarStrings Auto-Updater {_appVersionText}") { Enabled = false };
+        menu.Items.Add(_appVersionItem);
 
         _statusItem = new ToolStripMenuItem("Status: starting...") { Enabled = false };
         menu.Items.Add(_statusItem);
@@ -145,17 +152,62 @@ public sealed class TrayApplicationContext : ApplicationContext
 
             _settingsService.Save(_settings);
 
-            if (manualTrigger && outcome == CheckOutcome.UpToDate)
+            var selfUpdateOutcome = await _selfUpdateService.CheckForUpdatesAsync(
+                _settings,
+                manualTrigger,
+                (release, currentVersion) => Task.FromResult(AppUpdatePromptForm.AskUserToDownload(release, currentVersion)),
+                OnAppUpdateDownloadedAsync,
+                ShowBalloon,
+                CancellationToken.None);
+
+            _settingsService.Save(_settings);
+
+            if (manualTrigger && outcome == CheckOutcome.UpToDate && selfUpdateOutcome == SelfUpdateOutcome.UpToDate)
             {
-                ShowBalloon("You're already running the latest StarStrings version.", isError: false);
+                ShowBalloon("You're already running the latest StarStrings content and app version.", isError: false);
             }
         }
         finally
         {
             _checkInProgress = false;
-            _checkNowItem.Enabled = true;
-            RefreshMenuState();
+            if (!_isExiting)
+            {
+                _checkNowItem.Enabled = true;
+                RefreshMenuState();
+            }
         }
+    }
+
+    private Task OnAppUpdateDownloadedAsync(string exePath, GitHubRelease release)
+    {
+        var restart = MessageBox.Show(
+            $"StarStrings Auto-Updater {release.TagName} has been downloaded.\n\n" +
+            "Restart now to use it? The current version will close.\n\n" +
+            $"You can also run it later from:\n{exePath}",
+            "Update Downloaded", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes;
+
+        if (!restart)
+        {
+            return Task.CompletedTask;
+        }
+
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = exePath,
+                UseShellExecute = true,
+            });
+            Logger.Info($"Launched new app version from {exePath}; exiting current instance.");
+            ExitApplication();
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Failed to launch new app version: {ex.Message}");
+            ShowBalloon("Failed to launch the new version automatically. You can run it manually from the updates folder.", isError: true);
+        }
+
+        return Task.CompletedTask;
     }
 
     private void OnToggleAutoCheck(object? sender, EventArgs e)
@@ -291,19 +343,29 @@ public sealed class TrayApplicationContext : ApplicationContext
         var lastChecked = _settings.LastCheckedAtUtc?.ToLocalTime().ToString("g") ?? "never";
 
         _statusItem.Text = $"LIVE folder: {folderStatus} | Installed: {versionStatus} | Last checked: {lastChecked}";
-        _trayIcon.Text = Truncate($"StarStrings Auto-Updater - {(_settings.AutoCheckEnabled ? "running" : "stopped")}", 127);
+        _trayIcon.Text = Truncate(
+            $"StarStrings Auto-Updater {_appVersionText} - {(_settings.AutoCheckEnabled ? "running" : "stopped")}", 127);
     }
 
     private static string Truncate(string s, int max) => s.Length <= max ? s : s[..max];
 
+    private static string FormatVersion(Version v) => $"v{v.Major}.{v.Minor}.{Math.Max(v.Build, 0)}";
+
     private void ExitApplication()
     {
+        if (_isExiting)
+        {
+            return;
+        }
+
+        _isExiting = true;
         Logger.Info("StarStrings Auto-Updater exiting.");
         _timer.Stop();
         _timer.Dispose();
         _trayIcon.Visible = false;
         _trayIcon.Dispose();
         _updateService.Dispose();
+        _selfUpdateService.Dispose();
         Application.Exit();
     }
 }
