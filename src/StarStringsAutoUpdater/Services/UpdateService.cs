@@ -32,6 +32,7 @@ public sealed class UpdateService : IDisposable
         AppSettings settings,
         bool manualTrigger,
         Func<GitHubRelease, Task<bool>> confirmInstallAsync,
+        Action<GitHubRelease>? notifySilentInstall,
         Action<string, bool>? notify,
         CancellationToken ct)
     {
@@ -103,19 +104,22 @@ public sealed class UpdateService : IDisposable
                 return CheckOutcome.NeedsLiveFolder;
             }
 
-            var previouslyDeclined = settings.LastDeclinedPublishedAt == release.PublishedAt;
-            if (!manualTrigger && previouslyDeclined)
+            if (!settings.SilentAutoInstall)
             {
-                Logger.Info($"Skipping automatic prompt for '{release.Name}': user already declined it.");
-                return CheckOutcome.Declined;
-            }
+                var previouslyDeclined = settings.LastDeclinedPublishedAt == release.PublishedAt;
+                if (!manualTrigger && previouslyDeclined)
+                {
+                    Logger.Info($"Skipping automatic prompt for '{release.Name}': user already declined it.");
+                    return CheckOutcome.Declined;
+                }
 
-            var accepted = await confirmInstallAsync(release);
-            if (!accepted)
-            {
-                settings.LastDeclinedPublishedAt = release.PublishedAt;
-                Logger.Info($"User declined installing version: {release.Name}");
-                return CheckOutcome.Declined;
+                var accepted = await confirmInstallAsync(release);
+                if (!accepted)
+                {
+                    settings.LastDeclinedPublishedAt = release.PublishedAt;
+                    Logger.Info($"User declined installing version: {release.Name}");
+                    return CheckOutcome.Declined;
+                }
             }
 
             var result = await Task.Run(() => ZipInstaller.Install(tempZipPath, settings.LiveFolderPath!), ct);
@@ -137,7 +141,15 @@ public sealed class UpdateService : IDisposable
                 Logger.Info("No existing user.cfg found; installed the one bundled with StarStrings.");
             }
 
-            notify?.Invoke($"Installed StarStrings: {release.Name}", false);
+            if (settings.SilentAutoInstall)
+            {
+                notifySilentInstall?.Invoke(release);
+            }
+            else
+            {
+                notify?.Invoke($"Installed StarStrings: {release.Name}", false);
+            }
+
             return CheckOutcome.Installed;
         }
         catch (Exception ex)

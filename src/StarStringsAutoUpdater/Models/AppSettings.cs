@@ -15,6 +15,10 @@ public sealed class AppSettings
 
     public int CheckIntervalMinutes { get; set; } = 30;
 
+    /// <summary>When true, a newly found StarStrings release is installed automatically
+    /// without asking Install Now/Skip - only a brief confirmation dialog is shown afterward.</summary>
+    public bool SilentAutoInstall { get; set; }
+
     /// <summary>published_at of the release whose content we last installed.</summary>
     public DateTimeOffset? LastAppliedPublishedAt { get; set; }
 

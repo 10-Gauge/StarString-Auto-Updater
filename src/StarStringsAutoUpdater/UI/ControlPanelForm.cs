@@ -16,6 +16,7 @@ public sealed record ControlPanelActions(
     Action RestoreBackup,
     Action OpenLogFolder,
     Action ToggleStartWithWindows,
+    Action ToggleSilentAutoInstall,
     Action Exit);
 
 /// <summary>A dark-themed dashboard exposing every tray action in one window, opened by double-clicking the tray icon.</summary>
@@ -46,6 +47,7 @@ public sealed class ControlPanelForm : Form
     private Button _toggleAutoCheckButton = null!;
     private Button _restoreBackupButton = null!;
     private CheckBox _startWithWindowsCheck = null!;
+    private CheckBox _silentAutoInstallCheck = null!;
     private Label _currentIntervalValue = null!;
     private ComboBox _intervalCombo = null!;
     private bool _suppressIntervalEvent;
@@ -208,6 +210,20 @@ public sealed class ControlPanelForm : Form
         buttonRow.Controls.Add(checkNowButton);
         buttonRow.Controls.Add(changeFolderButton);
         card.Controls.Add(buttonRow);
+
+        _silentAutoInstallCheck = new CheckBox
+        {
+            Text = "Auto-install updates silently (no prompt)",
+            AutoSize = true,
+            AutoCheck = false, // state is driven exclusively by RefreshFromSettings, matching the tray menu item's pattern
+            ForeColor = Theme.TextPrimary,
+            BackColor = Theme.CardBackground,
+            FlatStyle = FlatStyle.Flat,
+            Cursor = Cursors.Hand,
+            Margin = new Padding(0, 10, 0, 0),
+        };
+        _silentAutoInstallCheck.Click += (_, _) => _actions.ToggleSilentAutoInstall();
+        card.Controls.Add(_silentAutoInstallCheck);
 
         return card;
     }
@@ -414,6 +430,7 @@ public sealed class ControlPanelForm : Form
         _installedValue.Text = settings.LastAppliedReleaseName ?? "None installed yet";
         _scVersionValue.Text = settings.LastAppliedScVersion ?? "Unknown";
         _lastCheckedValue.Text = settings.LastCheckedAtUtc?.ToLocalTime().ToString("f") ?? "Never";
+        _silentAutoInstallCheck.Checked = settings.SilentAutoInstall;
 
         _toggleAutoCheckButton.Text = settings.AutoCheckEnabled ? "Stop Auto-Check" : "Start Auto-Check";
         _restoreBackupButton.Enabled = settings.HasLiveFolder && ZipInstaller.BackupExists(settings.LiveFolderPath!);

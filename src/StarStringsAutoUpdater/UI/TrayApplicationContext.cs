@@ -176,6 +176,7 @@ public sealed class TrayApplicationContext : ApplicationContext
                 _settings,
                 manualTrigger,
                 release => Task.FromResult(UpdatePromptForm.AskUserToInstall(release)),
+                ShowSilentInstallConfirmation,
                 ShowBalloon,
                 CancellationToken.None);
 
@@ -324,6 +325,7 @@ public sealed class TrayApplicationContext : ApplicationContext
             RestoreBackup: () => OnRestoreBackup(null, EventArgs.Empty),
             OpenLogFolder: OpenLogFolder,
             ToggleStartWithWindows: () => OnToggleStartWithWindows(null, EventArgs.Empty),
+            ToggleSilentAutoInstall: () => OnToggleSilentAutoInstall(null, EventArgs.Empty),
             Exit: ExitApplication));
 
         try
@@ -435,6 +437,21 @@ public sealed class TrayApplicationContext : ApplicationContext
             FileName = AppPaths.LogsFolder,
             UseShellExecute = true,
         });
+    }
+
+    private static void ShowSilentInstallConfirmation(GitHubRelease release)
+    {
+        MessageBox.Show(
+            $"StarStrings has been automatically updated.\n\n{release.Name}",
+            "StarStrings Auto-Updater", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+
+    private void OnToggleSilentAutoInstall(object? sender, EventArgs e)
+    {
+        _settings.SilentAutoInstall = !_settings.SilentAutoInstall;
+        _settingsService.Save(_settings);
+        Logger.Info($"Silent auto-install set to: {_settings.SilentAutoInstall}");
+        RefreshMenuState();
     }
 
     private void ShowBalloon(string message, bool isError)

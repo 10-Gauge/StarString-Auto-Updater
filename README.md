@@ -25,7 +25,9 @@ you first.
   tray menu's **Check Interval** submenu (30 min / 60 min / 3 hr / 12 hr / daily presets, or
   **Custom...** for any hours:minutes combination).
 - When it finds a genuinely new version, shows a dialog with the release name, publish date,
-  and release notes, and asks **Install Now** or **Skip**.
+  and release notes, and asks **Install Now** or **Skip** — unless **Auto-install updates
+  silently** is checked in the Control Panel (under Check Now/Change Folder), in which case it
+  installs automatically with no prompt and just shows a brief confirmation dialog afterward.
 - Backs up your existing `global.ini` to `global.ini.bak` before overwriting it, and lets you
   restore that backup from the tray menu at any time.
 - Never touches an existing `user.cfg` — it only installs the bundled one if you don't have one
