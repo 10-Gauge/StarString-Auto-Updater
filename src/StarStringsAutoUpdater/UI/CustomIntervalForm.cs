@@ -9,6 +9,13 @@ public sealed class CustomIntervalForm : Form
     private const int MinTotalMinutes = 5;
     private const int MaxHours = 168; // 1 week
 
+    private const int Margin = 16;
+    private const int LabelInputGap = 10;
+    private const int InputWidth = 70;
+    private const int RowSpacing = 14;
+    private const int ButtonWidth = 80;
+    private const int ButtonHeight = 28;
+
     private readonly NumericUpDown _hoursInput;
     private readonly NumericUpDown _minutesInput;
 
@@ -23,40 +30,67 @@ public sealed class CustomIntervalForm : Form
         MinimizeBox = false;
         ShowInTaskbar = true;
         AutoScaleMode = AutoScaleMode.Dpi;
-        ClientSize = new Size(300, 130);
 
-        var label = new Label
+        const string introText = "Check for StarStrings updates every:";
+        const string hoursText = "Hours:";
+        const string minutesText = "Minutes:";
+
+        var introLabel = new Label
         {
-            Text = "Check for StarStrings updates every:",
+            Text = introText,
             AutoSize = true,
-            Location = new Point(16, 16),
+            Location = new Point(Margin, Margin),
         };
 
-        var hoursLabel = new Label { Text = "Hours:", AutoSize = true, Location = new Point(16, 52) };
+        // Measure both row labels so the input fields start at a shared column wide
+        // enough for either one, regardless of font/DPI - this is what actually
+        // prevents the labels overlapping the fields (fixed pixel offsets don't).
+        var hoursLabelSize = TextRenderer.MeasureText(hoursText, Font);
+        var minutesLabelSize = TextRenderer.MeasureText(minutesText, Font);
+        var labelColumnWidth = Math.Max(hoursLabelSize.Width, minutesLabelSize.Width);
+        var inputX = Margin + labelColumnWidth + LabelInputGap;
+
+        var hoursRowTop = introLabel.Bottom + 16;
+        var hoursLabel = new Label
+        {
+            Text = hoursText,
+            AutoSize = true,
+            Location = new Point(Margin, hoursRowTop + 3),
+        };
         _hoursInput = new NumericUpDown
         {
             Minimum = 0,
             Maximum = MaxHours,
             Value = Math.Clamp(initialTotalMinutes / 60, 0, MaxHours),
-            Location = new Point(70, 48),
-            Width = 60,
+            Location = new Point(inputX, hoursRowTop),
+            Width = InputWidth,
         };
 
-        var minutesLabel = new Label { Text = "Minutes:", AutoSize = true, Location = new Point(150, 52) };
+        var minutesRowTop = hoursRowTop + _hoursInput.Height + RowSpacing;
+        var minutesLabel = new Label
+        {
+            Text = minutesText,
+            AutoSize = true,
+            Location = new Point(Margin, minutesRowTop + 3),
+        };
         _minutesInput = new NumericUpDown
         {
             Minimum = 0,
             Maximum = 59,
             Value = Math.Clamp(initialTotalMinutes % 60, 0, 59),
-            Location = new Point(214, 48),
-            Width = 60,
+            Location = new Point(inputX, minutesRowTop),
+            Width = InputWidth,
         };
+
+        var contentWidth = Math.Max(introLabel.Width, labelColumnWidth + LabelInputGap + InputWidth);
+        var dialogWidth = Margin * 2 + contentWidth;
+        var buttonsTop = minutesRowTop + _minutesInput.Height + 20;
 
         var okButton = new Button
         {
             Text = "OK",
-            Location = new Point(114, 88),
-            Size = new Size(80, 28),
+            Location = new Point(dialogWidth - Margin - ButtonWidth * 2 - 8, buttonsTop),
+            Size = new Size(ButtonWidth, ButtonHeight),
         };
         okButton.Click += OnOkClick;
 
@@ -64,11 +98,13 @@ public sealed class CustomIntervalForm : Form
         {
             Text = "Cancel",
             DialogResult = DialogResult.Cancel,
-            Location = new Point(200, 88),
-            Size = new Size(80, 28),
+            Location = new Point(okButton.Right + 8, buttonsTop),
+            Size = new Size(ButtonWidth, ButtonHeight),
         };
 
-        Controls.AddRange([label, hoursLabel, _hoursInput, minutesLabel, _minutesInput, okButton, cancelButton]);
+        ClientSize = new Size(dialogWidth, buttonsTop + ButtonHeight + Margin);
+
+        Controls.AddRange([introLabel, hoursLabel, _hoursInput, minutesLabel, _minutesInput, okButton, cancelButton]);
         AcceptButton = okButton;
         CancelButton = cancelButton;
     }
