@@ -79,7 +79,6 @@ public sealed class ControlPanelForm : Form
         root.Controls.Add(BuildStarStringsCard());
         root.Controls.Add(BuildScheduleCard());
         root.Controls.Add(BuildMaintenanceCard());
-        root.Controls.Add(BuildAboutRow());
         root.Controls.Add(BuildFooter());
 
         // Measure the fully-populated, fixed-width content first, then size the form to it,
@@ -286,35 +285,24 @@ public sealed class ControlPanelForm : Form
         return card;
     }
 
-    private Control BuildAboutRow()
-    {
-        var row = new FlowLayoutPanel
-        {
-            FlowDirection = FlowDirection.LeftToRight,
-            WrapContents = false,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            Margin = new Padding(0, 0, 0, 8),
-        };
-
-        var aboutButton = Theme.CreateButton("About", Theme.CardBackgroundAlt, Theme.CardBackgroundHover, Theme.TextPrimary);
-        aboutButton.Click += (_, _) => new AboutForm().ShowDialog(this);
-        row.Controls.Add(aboutButton);
-
-        return row;
-    }
-
     private static string DescribeInterval(int minutes)
     {
         var preset = Array.Find(IntervalPresets, p => p.Minutes == minutes);
         return preset.Label ?? $"Custom ({TrayApplicationContext.FormatInterval(minutes)})";
     }
 
+    /// <summary>About sits left-justified on the same row as Close/Exit App, which stay
+    /// right-justified. FlowLayoutPanel doesn't support mixed alignment in one row on its
+    /// own, so a computed blank spacer fills the gap between the two groups - simpler and
+    /// safer here than Anchor (which locks its offset at parent-size-at-add-time) or a
+    /// second nested layout container.</summary>
     private Control BuildFooter()
     {
+        const int ButtonGap = 8;
+
         var row = new FlowLayoutPanel
         {
-            FlowDirection = FlowDirection.RightToLeft,
+            FlowDirection = FlowDirection.LeftToRight,
             WrapContents = false,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
@@ -323,15 +311,27 @@ public sealed class ControlPanelForm : Form
             Margin = new Padding(0, 4, 0, 0),
         };
 
-        var closeButton = Theme.CreateButton("Close", Theme.CardBackgroundAlt, Theme.CardBackgroundHover, Theme.TextPrimary);
-        closeButton.Click += (_, _) => Close();
+        var aboutButton = Theme.CreateButton("About", Theme.CardBackgroundAlt, Theme.CardBackgroundHover, Theme.TextPrimary);
+        aboutButton.Margin = Padding.Empty;
+        aboutButton.Click += (_, _) => new AboutForm().ShowDialog(this);
 
         var exitButton = Theme.CreateButton("Exit App", Theme.Danger, Theme.DangerHover);
+        exitButton.Margin = Padding.Empty;
         exitButton.Click += OnExitClicked;
 
-        // RightToLeft flow places the first-added child at the rightmost position.
-        row.Controls.Add(closeButton);
+        var closeButton = Theme.CreateButton("Close", Theme.CardBackgroundAlt, Theme.CardBackgroundHover, Theme.TextPrimary);
+        closeButton.Margin = Padding.Empty;
+        closeButton.Click += (_, _) => Close();
+
+        var usedWidth = aboutButton.PreferredSize.Width + exitButton.PreferredSize.Width + closeButton.PreferredSize.Width + ButtonGap;
+        var spacer = new Panel { Width = Math.Max(0, CardWidth - usedWidth), Height = 1, Margin = Padding.Empty, BackColor = Theme.Background };
+        var buttonGap = new Panel { Width = ButtonGap, Height = 1, Margin = Padding.Empty, BackColor = Theme.Background };
+
+        row.Controls.Add(aboutButton);
+        row.Controls.Add(spacer);
         row.Controls.Add(exitButton);
+        row.Controls.Add(buttonGap);
+        row.Controls.Add(closeButton);
 
         CancelButton = closeButton;
         AcceptButton = closeButton;
