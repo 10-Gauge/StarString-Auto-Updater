@@ -111,6 +111,7 @@ public sealed class UpdateService : IDisposable
             settings.LastAppliedZipSha256 = hash;
             settings.LastAppliedReleaseName = release.Name;
             settings.LastAppliedAtUtc = DateTimeOffset.UtcNow;
+            settings.LastAppliedScVersion = await _client.TryGetStarStringsTargetScVersionAsync(ct);
             settings.LastDeclinedPublishedAt = null;
 
             Logger.RecordVersionInstalled(release.Name, release.PublishedAt, hash);

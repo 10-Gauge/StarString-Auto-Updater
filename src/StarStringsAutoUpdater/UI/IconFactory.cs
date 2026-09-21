@@ -1,51 +1,34 @@
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Runtime.InteropServices;
+using System.Reflection;
 
 namespace StarStringsAutoUpdater.UI;
 
 /// <summary>
-/// Draws the tray icon at runtime instead of shipping a binary .ico asset,
-/// so the whole app is buildable from source with nothing but the SDK.
+/// Loads the app's icon artwork (a star badge with a sync-arc, embedded as multi-resolution
+/// .ico resources) rather than drawing it at runtime, so it can actually be designed and
+/// previewed rather than guessed at via blind GDI+ calls.
 /// </summary>
 public static class IconFactory
 {
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DestroyIcon(IntPtr handle);
+    private const string ResourcePrefix = "StarStringsAutoUpdater.Assets.";
 
+    private static readonly Icon RunningIcon = LoadEmbeddedIcon("AppIcon.ico");
+    private static readonly Icon PausedIcon = LoadEmbeddedIcon("AppIconPaused.ico");
+
+    /// <summary>Returns a new Icon instance at the requested size (an exact stored frame for
+    /// the common sizes the artwork ships with, otherwise the closest one scaled).</summary>
     public static Icon CreateTrayIcon(bool paused = false, int size = 32)
     {
-        using var bitmap = new Bitmap(size, size);
-        using (var g = Graphics.FromImage(bitmap))
-        {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.Clear(Color.Transparent);
+        var source = paused ? PausedIcon : RunningIcon;
+        return new Icon(source, size, size);
+    }
 
-            var backColor = paused ? Color.FromArgb(255, 120, 120, 120) : Color.FromArgb(255, 46, 125, 214);
-            using (var brush = new SolidBrush(backColor))
-            {
-                g.FillEllipse(brush, 1, 1, size - 2, size - 2);
-            }
-
-            using var font = new Font("Segoe UI", size * 0.47f, FontStyle.Bold, GraphicsUnit.Pixel);
-            using var textBrush = new SolidBrush(Color.White);
-            var text = "S";
-            var textSize = g.MeasureString(text, font);
-            g.DrawString(text, font, textBrush,
-                (size - textSize.Width) / 2f - 1,
-                (size - textSize.Height) / 2f - 1);
-        }
-
-        var hIcon = bitmap.GetHicon();
-        try
-        {
-            using var tempIcon = Icon.FromHandle(hIcon);
-            return (Icon)tempIcon.Clone(); // clone so the handle below can be safely destroyed
-        }
-        finally
-        {
-            DestroyIcon(hIcon);
-        }
+    private static Icon LoadEmbeddedIcon(string fileName)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceName = ResourcePrefix + fileName;
+        using var stream = assembly.GetManifestResourceStream(resourceName)
+            ?? throw new InvalidOperationException($"Embedded resource '{resourceName}' not found.");
+        return new Icon(stream);
     }
 }

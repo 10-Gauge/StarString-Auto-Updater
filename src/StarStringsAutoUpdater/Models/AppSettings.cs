@@ -26,6 +26,11 @@ public sealed class AppSettings
 
     public DateTimeOffset? LastAppliedAtUtc { get; set; }
 
+    /// <summary>Star Citizen PU version (e.g. "4.10.1") the installed StarStrings release
+    /// targets, parsed from the StarStrings repo's README at install time. Null if it
+    /// couldn't be determined.</summary>
+    public string? LastAppliedScVersion { get; set; }
+
     /// <summary>published_at of a release the user was prompted about and declined, so we
     /// don't nag again on every automatic check for that same release.</summary>
     public DateTimeOffset? LastDeclinedPublishedAt { get; set; }
@@ -49,6 +54,7 @@ public sealed class AppSettings
         LastAppliedZipSha256 = null;
         LastAppliedReleaseName = null;
         LastAppliedAtUtc = null;
+        LastAppliedScVersion = null;
         LastDeclinedPublishedAt = null;
     }
 }

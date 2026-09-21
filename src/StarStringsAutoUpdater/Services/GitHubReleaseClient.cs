@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using StarStringsAutoUpdater.Models;
 
 namespace StarStringsAutoUpdater.Services;
@@ -11,6 +12,14 @@ public sealed class GitHubReleaseClient : IDisposable
     // the release's published_at, name, and asset content do.
     public const string StarStringsLatestReleaseUrl = "https://api.github.com/repos/MrKraken/StarStrings/releases/tags/latest";
     private const string StarStringsExpectedAssetName = "StarStrings-LIVE.zip";
+
+    // Neither the release metadata nor the zip itself names the Star Citizen PU version
+    // StarStrings targets - the repo's README is the only place it's stated, as CIG's own
+    // build-id format (e.g. "sc-alpha-4.10.1_live_12660092"). This is a plain CDN fetch
+    // (not the api.github.com endpoint), so it doesn't count against the API rate limit.
+    private const string StarStringsReadmeUrl = "https://raw.githubusercontent.com/MrKraken/StarStrings/master/readme.md";
+    private static readonly Regex ScVersionPattern = new(
+        @"sc-alpha-(?<version>\d+(?:\.\d+){1,3})_(?:live|ptu)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     // Our own repo uses ordinary semver tags, so the normal "latest release" endpoint
     // (most recent non-draft, non-prerelease release) works as expected here.
@@ -74,6 +83,30 @@ public sealed class GitHubReleaseClient : IDisposable
     {
         var exes = release.Assets.Where(a => a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).ToList();
         return exes.Count == 1 ? exes[0] : null;
+    }
+
+    /// <summary>Best-effort lookup of the Star Citizen PU version (e.g. "4.10.1") the
+    /// current StarStrings README says it targets. Returns null on any failure or if the
+    /// expected build-id pattern isn't found, rather than failing the caller's flow.</summary>
+    public async Task<string?> TryGetStarStringsTargetScVersionAsync(CancellationToken ct)
+    {
+        try
+        {
+            using var response = await _http.GetAsync(StarStringsReadmeUrl, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var text = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            var match = ScVersionPattern.Match(text);
+            return match.Success ? match.Groups["version"].Value : null;
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"Couldn't determine the StarStrings target Star Citizen version: {ex.Message}");
+            return null;
+        }
     }
 
     public async Task DownloadFileAsync(string url, string destinationPath, CancellationToken ct)

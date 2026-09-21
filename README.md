@@ -11,11 +11,15 @@ you first.
 ## What it does
 
 - **Double-click the tray icon to open the Control Panel** — a dark-themed dashboard with every
-  action the app can perform: live status, the StarStrings content check (folder, installed
-  version, last checked, Check Now), the check schedule (start/stop, interval presets/custom),
-  maintenance (Restore Backup, Open Log Folder), Start with Windows, and Exit. It stays live while
-  open — every action it triggers updates the panel immediately, no need to close and reopen it.
+  action the app can perform: live status, StarStrings Installation Info (LIVE folder, installed
+  version, the Star Citizen PU version that release targets, last checked, Check Now), the check
+  schedule (start/stop, current interval, presets/custom), maintenance (Restore Backup, Open Log
+  Folder), Start with Windows, an About section crediting the app and StarStrings authors, and
+  Exit. It stays live while open — every action it triggers updates the panel immediately, no
+  need to close and reopen it.
 - Runs quietly in the system tray, starting automatically when you log into Windows.
+- Custom icon (a star badge with a sync arc) used for the tray icon, the exe itself, and the
+  Control Panel — it switches to a grayscale variant while auto-check is paused.
 - Checks the StarStrings "latest" release every 30 minutes by default — adjustable from the
   tray menu's **Check Interval** submenu (30 min / 60 min / 3 hr / 12 hr / daily presets, or
   **Custom...** for any hours:minutes combination).
@@ -33,7 +37,8 @@ you first.
   download them, on the same schedule as the StarStrings content check.
 - Shows the running app version at the top of the tray menu and in the tray icon's tooltip.
 - Tray icon right-click menu: **Open Control Panel...**, **Start/Stop Auto-Check**, **Check for
-  Updates Now**, **Check Interval** (submenu), **Change Star Citizen LIVE Folder**, **Open Log
+  Updates Now**, **Check Interval** (submenu — the menu item itself always shows the currently
+  active interval, e.g. "Check Interval (30m)"), **Change Star Citizen LIVE Folder**, **Open Log
   Folder**, **Restore Backup (global.ini.bak)**, **Start with Windows** (toggle), **Exit**.
 
 ## Why this isn't a literal Windows Service
@@ -65,6 +70,17 @@ therefore compares:
 
 If you decline a version, the app won't nag you about that exact version again on automatic
 checks — but "Check for Updates Now" always re-prompts regardless.
+
+## Star Citizen PU version detection
+
+Neither the StarStrings release metadata nor the zip itself states which Star Citizen patch a
+release targets, so the Control Panel's "Built For Star Citizen Version" field is parsed from
+the StarStrings repo's `readme.md`, which states it in CIG's own build-id format (e.g.
+`sc-alpha-4.10.1_live_12660092`). This is fetched from `raw.githubusercontent.com` (a plain file
+fetch, not the GitHub API, so it doesn't count against the API rate limit) right after installing
+a new version, so it reflects the version that was actually installed rather than always the very
+latest upstream state. It shows "Unknown" if the pattern can't be found (e.g. before anything has
+ever been installed, or if StarStrings changes how it states this).
 
 ## Restoring a backup
 
@@ -101,6 +117,15 @@ won't let a running executable overwrite itself anyway — so instead:
 
 Each release's `.exe` is named with its version, e.g. `StarStringsAutoUpdater-v1.2.0.exe`,
 so downloaded builds are easy to tell apart.
+
+## About
+
+The Control Panel's About section credits:
+- **StarStrings Auto-Updater** itself — created by [10 Gauge](https://robertsspaceindustries.com/en/citizens/10Gauge)
+  of [Jokers Gambit](https://robertsspaceindustries.com/en/orgs/J0K3R5).
+- **StarStrings** — the localization content this app installs, brought to you by
+  [MrKraken](https://github.com/MrKraken/StarStrings), whose work and continued upkeep of the
+  translation pack this app exists to automate.
 
 ## Building
 
@@ -151,4 +176,6 @@ Settings live in `%AppData%\StarStringsAutoUpdater\settings.json`, including
 - GitHub's public API is unauthenticated here (no token), which allows 60 requests/hour per IP.
   Each check makes at most two API calls (StarStrings content + the app's own release) plus a
   download or two when something's actually new — comfortably within the limit at the default
-  30-minute check interval.
+  30-minute check interval. The Star Citizen version lookup is a separate plain file fetch from
+  `raw.githubusercontent.com`, not the rate-limited API, and only happens right after installing
+  a new version.

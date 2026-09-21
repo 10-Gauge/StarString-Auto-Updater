@@ -40,10 +40,12 @@ public sealed class ControlPanelForm : Form
     private Label _statusValue = null!;
     private Label _folderValue = null!;
     private Label _installedValue = null!;
+    private Label _scVersionValue = null!;
     private Label _lastCheckedValue = null!;
     private Button _toggleAutoCheckButton = null!;
     private Button _restoreBackupButton = null!;
     private CheckBox _startWithWindowsCheck = null!;
+    private Label _currentIntervalValue = null!;
     private ComboBox _intervalCombo = null!;
     private bool _suppressIntervalEvent;
 
@@ -77,6 +79,7 @@ public sealed class ControlPanelForm : Form
         root.Controls.Add(BuildStarStringsCard());
         root.Controls.Add(BuildScheduleCard());
         root.Controls.Add(BuildMaintenanceCard());
+        root.Controls.Add(BuildAboutSection());
         root.Controls.Add(BuildFooter());
 
         // Measure the fully-populated, fixed-width content first, then size the form to it,
@@ -168,7 +171,7 @@ public sealed class ControlPanelForm : Form
         var card = Theme.CreateCard(CardWidth);
         var contentWidth = CardWidth - card.Padding.Horizontal;
 
-        card.Controls.Add(Theme.SectionHeading("StarStrings Content"));
+        card.Controls.Add(Theme.SectionHeading("StarStrings Installation Info"));
 
         card.Controls.Add(Theme.Caption("Star Citizen LIVE Folder"));
         _folderValue = Theme.Value("...", contentWidth);
@@ -177,6 +180,10 @@ public sealed class ControlPanelForm : Form
         card.Controls.Add(Theme.Caption("Installed Version"));
         _installedValue = Theme.Value("...", contentWidth);
         card.Controls.Add(_installedValue);
+
+        card.Controls.Add(Theme.Caption("Built For Star Citizen Version"));
+        _scVersionValue = Theme.Value("...", contentWidth);
+        card.Controls.Add(_scVersionValue);
 
         card.Controls.Add(Theme.Caption("Last Checked"));
         _lastCheckedValue = Theme.Value("...", contentWidth);
@@ -216,7 +223,11 @@ public sealed class ControlPanelForm : Form
         _toggleAutoCheckButton.Click += (_, _) => _actions.ToggleAutoCheck();
         card.Controls.Add(_toggleAutoCheckButton);
 
-        card.Controls.Add(Theme.Caption("Check Interval"));
+        card.Controls.Add(Theme.Caption("Current Interval"));
+        _currentIntervalValue = Theme.Value("...", contentWidth);
+        card.Controls.Add(_currentIntervalValue);
+
+        card.Controls.Add(Theme.Caption("Change Interval"));
 
         _intervalCombo = new ComboBox
         {
@@ -273,6 +284,96 @@ public sealed class ControlPanelForm : Form
         card.Controls.Add(_startWithWindowsCheck);
 
         return card;
+    }
+
+    private static Control BuildAboutSection()
+    {
+        var panel = new FlowLayoutPanel
+        {
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = new Padding(0, 0, 0, 8),
+        };
+
+        panel.Controls.Add(BuildAboutLine(
+            "Created by 10 Gauge of Jokers Gambit",
+            ("10 Gauge", "https://robertsspaceindustries.com/en/citizens/10Gauge"),
+            ("Jokers Gambit", "https://robertsspaceindustries.com/en/orgs/J0K3R5")));
+
+        panel.Controls.Add(BuildAboutLine(
+            "StarStrings is brought to you by MrKraken - thank you for his hard work and dedication to the project!",
+            ("MrKraken", "https://github.com/MrKraken/StarStrings")));
+
+        return panel;
+    }
+
+    private static LinkLabel BuildAboutLine(string text, params (string LinkText, string Url)[] links)
+    {
+        var label = new LinkLabel
+        {
+            Text = text,
+            AutoSize = true,
+            MaximumSize = new Size(CardWidth, 0),
+            Font = Theme.FontSmall,
+            BackColor = Theme.Background,
+            ForeColor = Theme.TextSecondary,
+            LinkColor = Theme.Accent,
+            ActiveLinkColor = Theme.AccentHover,
+            VisitedLinkColor = Theme.Accent,
+            LinkBehavior = LinkBehavior.HoverUnderline,
+            AutoDetectUrls = false,
+            // Suppress the default whole-text auto-link so only the explicit
+            // Links entries below (not the rest of the sentence) render as clickable.
+            LinkArea = new LinkArea(0, 0),
+        };
+
+        foreach (var (linkText, url) in links)
+        {
+            AddNamedLink(label, text, linkText, url);
+        }
+
+        label.LinkClicked += (_, e) =>
+        {
+            if (e.Link?.LinkData is string url)
+            {
+                OpenUrl(url);
+            }
+        };
+
+        return label;
+    }
+
+    private static void AddNamedLink(LinkLabel label, string fullText, string linkText, string url)
+    {
+        var start = fullText.IndexOf(linkText, StringComparison.Ordinal);
+        if (start >= 0)
+        {
+            label.Links.Add(start, linkText.Length, url);
+        }
+    }
+
+    private static void OpenUrl(string url)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"Failed to open URL '{url}': {ex.Message}");
+        }
+    }
+
+    private static string DescribeInterval(int minutes)
+    {
+        var preset = Array.Find(IntervalPresets, p => p.Minutes == minutes);
+        return preset.Label ?? $"Custom ({TrayApplicationContext.FormatInterval(minutes)})";
     }
 
     private Control BuildFooter()
@@ -360,11 +461,13 @@ public sealed class ControlPanelForm : Form
 
         _folderValue.Text = settings.HasLiveFolder ? settings.LiveFolderPath! : "Not set - click Change Folder to choose one";
         _installedValue.Text = settings.LastAppliedReleaseName ?? "None installed yet";
+        _scVersionValue.Text = settings.LastAppliedScVersion ?? "Unknown";
         _lastCheckedValue.Text = settings.LastCheckedAtUtc?.ToLocalTime().ToString("f") ?? "Never";
 
         _toggleAutoCheckButton.Text = settings.AutoCheckEnabled ? "Stop Auto-Check" : "Start Auto-Check";
         _restoreBackupButton.Enabled = settings.HasLiveFolder && ZipInstaller.BackupExists(settings.LiveFolderPath!);
         _startWithWindowsCheck.Checked = settings.StartWithWindows;
+        _currentIntervalValue.Text = DescribeInterval(settings.CheckIntervalMinutes);
 
         RefreshIntervalCombo(settings.CheckIntervalMinutes);
     }

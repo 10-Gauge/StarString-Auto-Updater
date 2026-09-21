@@ -27,6 +27,7 @@ public sealed class TrayApplicationContext : ApplicationContext
     private ToolStripMenuItem _interval720Item = null!;
     private ToolStripMenuItem _interval1440Item = null!;
     private ToolStripMenuItem _intervalCustomItem = null!;
+    private ToolStripMenuItem _intervalMenuItem = null!;
 
     private AppSettings _settings;
     private bool _checkInProgress;
@@ -83,19 +84,19 @@ public sealed class TrayApplicationContext : ApplicationContext
         _checkNowItem = new ToolStripMenuItem("Check for Updates Now", null, async (_, _) => await PerformCheckAsync(manualTrigger: true));
         menu.Items.Add(_checkNowItem);
 
-        var intervalMenu = new ToolStripMenuItem("Check Interval");
+        _intervalMenuItem = new ToolStripMenuItem("Check Interval");
         _interval30Item = new ToolStripMenuItem("Every 30 Minutes", null, (_, _) => SetCheckInterval(30));
         _interval60Item = new ToolStripMenuItem("Every 60 Minutes", null, (_, _) => SetCheckInterval(60));
         _interval180Item = new ToolStripMenuItem("Every 3 Hours", null, (_, _) => SetCheckInterval(180));
         _interval720Item = new ToolStripMenuItem("Every 12 Hours", null, (_, _) => SetCheckInterval(720));
         _interval1440Item = new ToolStripMenuItem("Daily", null, (_, _) => SetCheckInterval(1440));
         _intervalCustomItem = new ToolStripMenuItem("Custom...", null, OnCustomInterval);
-        intervalMenu.DropDownItems.AddRange([
+        _intervalMenuItem.DropDownItems.AddRange([
             _interval30Item, _interval60Item, _interval180Item, _interval720Item, _interval1440Item,
             new ToolStripSeparator(),
             _intervalCustomItem,
         ]);
-        menu.Items.Add(intervalMenu);
+        menu.Items.Add(_intervalMenuItem);
 
         menu.Items.Add(new ToolStripSeparator());
 
@@ -290,6 +291,8 @@ public sealed class TrayApplicationContext : ApplicationContext
         var isPreset = minutes is 30 or 60 or 180 or 720 or 1440;
         _intervalCustomItem.Checked = !isPreset;
         _intervalCustomItem.Text = isPreset ? "Custom..." : $"Custom... ({FormatInterval(minutes)})";
+
+        _intervalMenuItem.Text = $"Check Interval ({FormatInterval(minutes)})";
     }
 
     internal static string FormatInterval(int totalMinutes)
