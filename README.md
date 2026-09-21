@@ -14,9 +14,9 @@ you first.
   action the app can perform: live status, StarStrings Installation Info (LIVE folder, installed
   version, the Star Citizen PU version that release targets, last checked, Check Now), the check
   schedule (start/stop, current interval, presets/custom), maintenance (Restore Backup, Open Log
-  Folder), Start with Windows, an About section crediting the app and StarStrings authors, and
-  Exit. It stays live while open — every action it triggers updates the panel immediately, no
-  need to close and reopen it.
+  Folder), Start with Windows, an **About** button opening a credits dialog, and Exit. It stays
+  live while open — every action it triggers updates the panel immediately, no need to close and
+  reopen it.
 - Runs quietly in the system tray, starting automatically when you log into Windows.
 - Custom icon (a star badge with a sync arc) used for the tray icon, the exe itself, and the
   Control Panel — it switches to a grayscale variant while auto-check is paused.
@@ -77,10 +77,11 @@ Neither the StarStrings release metadata nor the zip itself states which Star Ci
 release targets, so the Control Panel's "Built For Star Citizen Version" field is parsed from
 the StarStrings repo's `readme.md`, which states it in CIG's own build-id format (e.g.
 `sc-alpha-4.10.1_live_12660092`). This is fetched from `raw.githubusercontent.com` (a plain file
-fetch, not the GitHub API, so it doesn't count against the API rate limit) right after installing
-a new version, so it reflects the version that was actually installed rather than always the very
-latest upstream state. It shows "Unknown" if the pattern can't be found (e.g. before anything has
-ever been installed, or if StarStrings changes how it states this).
+fetch, not the GitHub API, so it doesn't count against the API rate limit) whenever a check
+finds it's still missing — right after a fresh install, and as a one-time backfill on the next
+check for anything installed before this field existed — so it fills in without needing a new
+StarStrings release to come out. It shows "Unknown" only before that first successful lookup
+(e.g. nothing installed yet, or the fetch failed) or if StarStrings changes how it states this.
 
 ## Restoring a backup
 
@@ -120,12 +121,13 @@ so downloaded builds are easy to tell apart.
 
 ## About
 
-The Control Panel's About section credits:
+The Control Panel's **About** button opens a credits dialog:
 - **StarStrings Auto-Updater** itself — created by [10 Gauge](https://robertsspaceindustries.com/en/citizens/10Gauge)
   of [Jokers Gambit](https://robertsspaceindustries.com/en/orgs/J0K3R5).
-- **StarStrings** — the localization content this app installs, brought to you by
-  [MrKraken](https://github.com/MrKraken/StarStrings), whose work and continued upkeep of the
-  translation pack this app exists to automate.
+- **StarStrings** — the localization content this app installs: "Thank you
+  [MrKraken](https://github.com/MrKraken) for your hard work and dedication to the
+  [StarStrings](https://github.com/MrKraken/StarStrings) project. Sincerely, The Star Citizen
+  Community."
 
 ## Building
 

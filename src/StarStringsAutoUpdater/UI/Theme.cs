@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Windows.Forms;
+using StarStringsAutoUpdater.Services;
 
 namespace StarStringsAutoUpdater.UI;
 
@@ -92,5 +93,61 @@ internal static class Theme
         button.FlatAppearance.MouseOverBackColor = hoverColor;
         button.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(hoverColor, 0.1f);
         return button;
+    }
+
+    /// <summary>A muted line of text with one or more specific substrings turned into clickable
+    /// links, e.g. CreateLinkLine("Thanks, Alice", ("Alice", url)). Only the named substrings are
+    /// clickable - LinkArea is zeroed out first to suppress LinkLabel's default whole-text link.</summary>
+    public static LinkLabel CreateLinkLine(int maxWidth, string text, params (string LinkText, string Url)[] links)
+    {
+        var label = new LinkLabel
+        {
+            Text = text,
+            AutoSize = true,
+            MaximumSize = new Size(maxWidth, 0),
+            Font = FontSmall,
+            BackColor = Background,
+            ForeColor = TextSecondary,
+            LinkColor = Accent,
+            ActiveLinkColor = AccentHover,
+            VisitedLinkColor = Accent,
+            LinkBehavior = LinkBehavior.HoverUnderline,
+            LinkArea = new LinkArea(0, 0),
+        };
+
+        foreach (var (linkText, url) in links)
+        {
+            var start = text.IndexOf(linkText, StringComparison.Ordinal);
+            if (start >= 0)
+            {
+                label.Links.Add(start, linkText.Length, url);
+            }
+        }
+
+        label.LinkClicked += (_, e) =>
+        {
+            if (e.Link?.LinkData is string url)
+            {
+                OpenUrl(url);
+            }
+        };
+
+        return label;
+    }
+
+    public static void OpenUrl(string url)
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.Warning($"Failed to open URL '{url}': {ex.Message}");
+        }
     }
 }

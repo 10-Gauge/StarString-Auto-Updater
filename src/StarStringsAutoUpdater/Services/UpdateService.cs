@@ -60,6 +60,14 @@ public sealed class UpdateService : IDisposable
 
         if (settings.LastAppliedPublishedAt.HasValue && settings.LastAppliedPublishedAt.Value == release.PublishedAt)
         {
+            // Backfills the Star Citizen version for content that was already installed
+            // before this lookup existed (or if a previous lookup attempt failed), since
+            // this field otherwise only gets set at the moment of a fresh install.
+            if (string.IsNullOrEmpty(settings.LastAppliedScVersion))
+            {
+                settings.LastAppliedScVersion = await _client.TryGetStarStringsTargetScVersionAsync(ct);
+            }
+
             Logger.Info("No update: release metadata unchanged since last applied version.");
             return CheckOutcome.UpToDate;
         }
@@ -77,6 +85,11 @@ public sealed class UpdateService : IDisposable
                 // we don't re-download every check, but there's nothing to install.
                 settings.LastAppliedPublishedAt = release.PublishedAt;
                 settings.LastAppliedReleaseName = release.Name;
+                if (string.IsNullOrEmpty(settings.LastAppliedScVersion))
+                {
+                    settings.LastAppliedScVersion = await _client.TryGetStarStringsTargetScVersionAsync(ct);
+                }
+
                 Logger.Info($"Release '{release.Name}' republished with identical content; nothing to install.");
                 return CheckOutcome.UpToDate;
             }

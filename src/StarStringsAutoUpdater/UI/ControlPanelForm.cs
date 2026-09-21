@@ -79,7 +79,7 @@ public sealed class ControlPanelForm : Form
         root.Controls.Add(BuildStarStringsCard());
         root.Controls.Add(BuildScheduleCard());
         root.Controls.Add(BuildMaintenanceCard());
-        root.Controls.Add(BuildAboutSection());
+        root.Controls.Add(BuildAboutRow());
         root.Controls.Add(BuildFooter());
 
         // Measure the fully-populated, fixed-width content first, then size the form to it,
@@ -286,87 +286,22 @@ public sealed class ControlPanelForm : Form
         return card;
     }
 
-    private static Control BuildAboutSection()
+    private Control BuildAboutRow()
     {
-        var panel = new FlowLayoutPanel
+        var row = new FlowLayoutPanel
         {
-            FlowDirection = FlowDirection.TopDown,
+            FlowDirection = FlowDirection.LeftToRight,
             WrapContents = false,
             AutoSize = true,
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             Margin = new Padding(0, 0, 0, 8),
         };
 
-        panel.Controls.Add(BuildAboutLine(
-            "Created by 10 Gauge of Jokers Gambit",
-            ("10 Gauge", "https://robertsspaceindustries.com/en/citizens/10Gauge"),
-            ("Jokers Gambit", "https://robertsspaceindustries.com/en/orgs/J0K3R5")));
+        var aboutButton = Theme.CreateButton("About", Theme.CardBackgroundAlt, Theme.CardBackgroundHover, Theme.TextPrimary);
+        aboutButton.Click += (_, _) => new AboutForm().ShowDialog(this);
+        row.Controls.Add(aboutButton);
 
-        panel.Controls.Add(BuildAboutLine(
-            "StarStrings is brought to you by MrKraken - thank you for his hard work and dedication to the project!",
-            ("MrKraken", "https://github.com/MrKraken/StarStrings")));
-
-        return panel;
-    }
-
-    private static LinkLabel BuildAboutLine(string text, params (string LinkText, string Url)[] links)
-    {
-        var label = new LinkLabel
-        {
-            Text = text,
-            AutoSize = true,
-            MaximumSize = new Size(CardWidth, 0),
-            Font = Theme.FontSmall,
-            BackColor = Theme.Background,
-            ForeColor = Theme.TextSecondary,
-            LinkColor = Theme.Accent,
-            ActiveLinkColor = Theme.AccentHover,
-            VisitedLinkColor = Theme.Accent,
-            LinkBehavior = LinkBehavior.HoverUnderline,
-            // Suppress the default whole-text auto-link so only the explicit
-            // Links entries below (not the rest of the sentence) render as clickable.
-            LinkArea = new LinkArea(0, 0),
-        };
-
-        foreach (var (linkText, url) in links)
-        {
-            AddNamedLink(label, text, linkText, url);
-        }
-
-        label.LinkClicked += (_, e) =>
-        {
-            if (e.Link?.LinkData is string url)
-            {
-                OpenUrl(url);
-            }
-        };
-
-        return label;
-    }
-
-    private static void AddNamedLink(LinkLabel label, string fullText, string linkText, string url)
-    {
-        var start = fullText.IndexOf(linkText, StringComparison.Ordinal);
-        if (start >= 0)
-        {
-            label.Links.Add(start, linkText.Length, url);
-        }
-    }
-
-    private static void OpenUrl(string url)
-    {
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = url,
-                UseShellExecute = true,
-            });
-        }
-        catch (Exception ex)
-        {
-            Logger.Warning($"Failed to open URL '{url}': {ex.Message}");
-        }
+        return row;
     }
 
     private static string DescribeInterval(int minutes)
