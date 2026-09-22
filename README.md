@@ -1,7 +1,8 @@
-# StarStrings Auto-Updater
+# StarStrings Installer & Auto-Updater
 
 A Windows tray app that keeps [MrKraken's StarStrings](https://github.com/MrKraken/StarStrings)
-`global.ini` localization file up to date for **Star Citizen LIVE**.
+`global.ini` localization file up to date for **Star Citizen LIVE**.  This app will also install
+StarStrings for users that do not currently have StarStrings installed.
 
 It periodically checks the StarStrings GitHub releases page, and when a new version is
 published, downloads the `StarStrings-LIVE.zip`, extracts `global.ini` (and `user.cfg` if you
@@ -43,19 +44,6 @@ you first.
   Updates Now**, **Check Interval** (submenu — the menu item itself always shows the currently
   active interval, e.g. "Check Interval (30m)"), **Change Star Citizen LIVE Folder**, **Open Log
   Folder**, **Restore Backup (global.ini.bak)**, **Start with Windows** (toggle), **Exit**.
-
-## Why this isn't a literal Windows Service
-
-A true Windows Service (the kind managed by `services.msc`/SCM) runs in an isolated session
-with no desktop access, so it **cannot show a tray icon or any UI** — that's a Windows security
-boundary (Session 0 isolation), not a limitation of this app. Since the requirement was a
-right-clickable taskbar icon that can start/stop the checking loop, this app instead:
-
-- Registers itself to launch automatically when you log in, via the per-user
-  `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` registry key (no admin rights needed).
-- Runs the periodic check on a background timer inside the tray app itself.
-- "Start/Stop" in the tray menu pauses/resumes that timer — the app keeps running either way,
-  so you can resume from the tray without relaunching anything.
 
 ## How "new version" is detected
 
@@ -121,34 +109,6 @@ won't let a running executable overwrite itself anyway — so instead:
 
 Each release's `.exe` is named with its version, e.g. `StarStringsAutoUpdater-v1.2.0.exe`,
 so downloaded builds are easy to tell apart.
-
-## About
-
-The Control Panel's **About** button opens a credits dialog:
-- **StarStrings Auto-Updater** itself — created by [10 Gauge](https://robertsspaceindustries.com/en/citizens/10Gauge)
-  of [Jokers Gambit](https://robertsspaceindustries.com/en/orgs/J0K3R5).
-- **StarStrings** — the localization content this app installs: "Thank you
-  [MrKraken](https://github.com/MrKraken) for your hard work and dedication to the
-  [StarStrings](https://github.com/MrKraken/StarStrings) project. Sincerely, The Star Citizen
-  Community."
-
-## Building
-
-Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) on a Windows,
-macOS, or Linux machine (cross-compiling to Windows works from any OS; running the result
-requires Windows).
-
-```bash
-dotnet publish src/StarStringsAutoUpdater/StarStringsAutoUpdater.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
-```
-
-The output is a single portable `StarStringsAutoUpdater.exe` under
-`src/StarStringsAutoUpdater/bin/Release/net8.0-windows/win-x64/publish/` — no .NET runtime
-install required on the target machine.
-
-A GitHub Actions workflow (`.github/workflows/build.yml`) builds this automatically on every
-push and uploads it as a build artifact; pushing a `v*.*.*` tag also attaches it to a GitHub
-Release.
 
 ## Running it
 
